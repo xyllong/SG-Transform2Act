@@ -1,3 +1,4 @@
+#记得sudo apt-get install swig
 setproctitle
 lxml
 gymnasium==0.28.1
@@ -11,3 +12,5 @@ pyyaml
 pyglet==1.5.27
 termcolor
 torch_geometric
+six
+torch_scatter
