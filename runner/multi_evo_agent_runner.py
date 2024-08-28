@@ -156,7 +156,7 @@ class MultiEvoAgentRunner(BaseRunner):
             # logger.info("Agent_{} gets best_eval_win rate: {:.2f}.".format(i, b_win_rate[i]))
 
 
-            if log_evals[i].avg_episode_reward > learner.best_reward or win_rate[i] > learner.best_win_rate:
+            if log_evals[i].avg_episode_reward > learner.best_reward #or win_rate[i] > learner.best_win_rate:
                 learner.best_reward = log_evals[i].avg_episode_reward
                 learner.best_win_rate = win_rate[i]
                 learner.save_best_flag = True
