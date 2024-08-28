@@ -109,7 +109,7 @@ class RoboSumoDevEnv(MultiDevAgentEnv):
         self.env_scene.model.__setattr__('geom_size', gs)
         mujoco.mj_forward(self.env_scene.model, self.env_scene.data)
 
-    def _reset_agents(self):
+    def _reset_agents(self,**kwargs):
         min_gap = 0.3 + self.MIN_RADIUS / 2
         ###########################################################################
         # random_pos_flag is a flag that determine which side should agent rebirth
@@ -131,7 +131,7 @@ class RoboSumoDevEnv(MultiDevAgentEnv):
             self.agents[i].set_xyz((x,y,None))
 
 
-    def _reset(self, version=None):
+    def _reset(self, version=None, **kwargs):
         self._elapsed_steps = 0
         self.agent_contacts = False
         # self.RADIUS = self.START_RADIUS
@@ -140,11 +140,11 @@ class RoboSumoDevEnv(MultiDevAgentEnv):
         self._reset_radius()
         self._set_geom_radius()
         self.env_scene.reset()
-        self._reset_agents()
+        self._reset_agents(**kwargs)
         ob = self._get_obs()
         return ob, {}
     
-    def reset(self, margins=None, version=None):
+    def reset(self, margins=None, version=None, **kwargs):
         if self.agents is not None:
             del self.agents
         if hasattr(self, "env_scene"):
@@ -158,7 +158,7 @@ class RoboSumoDevEnv(MultiDevAgentEnv):
         if margins:
             for i in range(self.n_agents):
                 self.agents[i].set_margin(margins[i])
-        return self._reset()
+        return self._reset(**kwargs)
 
     def _step(self, actions):
         self._elapsed_steps += 1

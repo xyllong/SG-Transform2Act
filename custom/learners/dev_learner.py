@@ -71,7 +71,7 @@ class DevLearner:
         self.running_state = model['running_state']
 
         if 'epoch' in model:
-            epoch = model['epoch']
+            self.epoch = model['epoch']
         
         if self.is_shadow:
             # should not input averaged reward because the shadow
@@ -142,6 +142,9 @@ class DevLearner:
 
         """perform mini-batch PPO update"""
         optim_iter_num = int(math.ceil(len(states) / self.mini_batch_size))
+
+        policy_losses = []
+        value_losses = []
         for _ in range(self.num_optim_epoch):
             perm_np = np.arange(len(states))
             np.random.shuffle(perm_np)
@@ -164,6 +167,9 @@ class DevLearner:
                     self.ppo_step(self.policy_net, self.value_net, self.optimizer_policy, self.optimizer_value,
                                   1, states_b, actions_b, returns_b, advantages_b, fixed_log_probs_b,
                                   self.clip_epsilon, self.cfg.l2_reg)
+                policy_losses.append(policy_loss_i.item())
+                value_losses.append(value_loss_i.item())
+        return np.mean(policy_losses), np.mean(value_losses)
 
 
     def ppo_step(self, policy_net, value_net, optimizer_policy, optimizer_value, optim_value_iternum, states, actions,

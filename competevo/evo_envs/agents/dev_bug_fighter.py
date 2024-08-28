@@ -441,7 +441,7 @@ class DevBugFighter(BugFighter):
         low = -high
         self.observation_space = Box(low, high)
 
-    def reset_agent(self):
+    def reset_agent(self,**kwargs):
         xpos = self.get_qpos()[0]
         if xpos * self.GOAL > 0:
             self.set_goal(-self.GOAL)

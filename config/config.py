@@ -93,5 +93,9 @@ class Config:
         file_path = os.path.join(directory_path, 'config.yml')
         # Write the configuration data to the YAML file
         with open(file_path, 'w') as f:
+            yaml.dump(self.cfg, f)
+        file_path = os.path.join(directory_path, 'all_config.yml')
+        # Write the configuration data to the YAML file
+        with open(file_path, 'w') as f:
             yaml.dump(cfg, f)
         print(f"Config file is saved at {file_path}")

@@ -327,18 +327,18 @@ class MultiDevAgentEnv(MujocoEnv):
     def _seed(self, seed=None):
         return self.env_scene._seed(seed)
 
-    def _reset(self):
+    def _reset(self,**kwargs):
         self.cur_t = 0
         self._elapsed_steps = 0
         self.env_scene.reset()
-        self.reset_model()
+        self.reset_model(**kwargs)
         # reset agent position
         for i in range(self.n_agents):
             self.agents[i].set_xyz((None,None,None))
         ob = self._get_obs()
         return ob, {}
     
-    def reset(self):
+    def reset(self,**kwargs):
         if self.agents is not None:
             del self.agents
         if hasattr(self, "env_scene"):
@@ -349,7 +349,7 @@ class MultiDevAgentEnv(MujocoEnv):
         # reload from init files, to avoid multiprocessing w/r issue
         self.setup_agents(self.cfg, self.agent_names, self.agent_map, self.agent_args)
         self.reload_init_mujoco_env()
-        return self._reset()
+        return self._reset(**kwargs)
 
     def set_state(self, qpos, qvel):
         self.env_scene.set_state(qpos, qvel)
@@ -361,8 +361,8 @@ class MultiDevAgentEnv(MujocoEnv):
     def state_vector(self):
         return self.env_scene.state_vector()
     
-    def reset_model(self):
+    def reset_model(self,**kwargs):
         _ = self.env_scene.reset()
         for i in range(self.n_agents):
-            self.agents[i].reset_agent()
+            self.agents[i].reset_agent(**kwargs)
         return self._get_obs(), {}

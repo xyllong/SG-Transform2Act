@@ -460,7 +460,7 @@ class MultiEvoAgentEnv(MujocoEnv):
     def state_vector(self):
         return self.env_scene.state_vector()
     
-    def reset_model(self, **kwargs):
+    def reset_model(self,**kwargs):
         _ = self.env_scene.reset()
         for i in range(self.n_agents):
             self.agents[i].reset_agent(**kwargs)
