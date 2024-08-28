@@ -66,9 +66,9 @@ class DevValue(nn.Module):
         stage_ind, scale_state, sim_obs = self.batch_data(x_dict)
         if self.frame_gnn is not None: 
             bz = sim_obs.shape[0]
-            sim_obs, edges, _, num_nodes_cum_control = self.batch_data_graph(x_dict, sim_obs,dev=True)
+            sim_obs, edges, _, num_nodes_cum_control = self.batch_data_graph(x_dict, sim_obs)
             # self.frame_gnn.change_morphology(edges, num_nodes)
-            sim_obs = self.frame_gnn(sim_obs, edges, num_nodes_cum_control)
+            sim_obs = self.frame_gnn(sim_obs, edges, num_nodes_cum_control,dev=True)
             sim_obs = sim_obs.reshape(bz, -1)
         x = torch.cat((stage_ind, scale_state, sim_obs), -1)
         x = self.norm(x)
