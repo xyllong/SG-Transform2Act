@@ -7,6 +7,8 @@ from lib.rl.core.running_norm import RunningNorm
 from lib.models.mlp import MLP
 from lib.rl.core.distributions import Categorical, DiagGaussian
 
+from custom.models.sgnn import SGNN
+
 class DevPolicy(nn.Module):
     def __init__(self, cfg, agent):
         super(DevPolicy, self).__init__()
@@ -42,6 +44,12 @@ class DevPolicy(nn.Module):
             self.control_norm = RunningNorm(self.sim_obs_dim)
             cur_dim = self.sim_obs_dim
 
+
+        if 'egnn' in cfg.cfg and cfg.cfg['egnn'] and self.agent.scope == 'agent1':
+            self.frame_gnn = SGNN(state_dim = cur_dim//len(self.agent.body_ids), attr_fixed_dim = 0, attr_design_dim = 0, msg_dim = 32, p_step = 3, z_num = 7)
+        else:
+            self.frame_gnn = None
+
         self.control_mlp = MLP(cur_dim,
                                hidden_dims=self.cfg.dev_policy_specs['control_mlp'],
                                activation=self.cfg.dev_policy_specs['control_htype'])
@@ -57,11 +65,32 @@ class DevPolicy(nn.Module):
         self.fixed_x = None
 
     def batch_data(self, x):
-        stage_ind, scale_state, sim_obs = zip(*x)
+        stage_ind, scale_state, _, _, sim_obs = zip(*x)
         scale_state = torch.stack(scale_state, 0)
         stage_ind = torch.stack(stage_ind, 0)
         sim_obs = torch.stack(sim_obs, 0)
         return stage_ind, scale_state, sim_obs
+
+    def batch_data_graph(self, x, obs):
+        _, _, edges, num_nodes, _ = zip(*x)
+        obs= obs.reshape(obs.shape[0]*num_nodes[0], -1)
+        # use_transform_action = np.concatenate(use_transform_action)
+        if isinstance(num_nodes, np.ndarray):
+            num_nodes = torch.tensor(num_nodes, device=obs.device)
+        # num_nodes = np.concatenate(num_nodes)
+        num_nodes = torch.cat(num_nodes)
+        edges_new = torch.cat(edges, dim=1)
+        # num_nodes_cum = np.cumsum(num_nodes)
+        num_nodes_cum = torch.cumsum(num_nodes,dim=0)
+        # body_ind = torch.from_numpy(np.concatenate(body_ind))
+        if len(x) > 1:
+            repeat_num = [x.shape[1] for x in edges[1:]]
+            # e_offset = np.repeat(num_nodes_cum[:-1], repeat_num)
+            # e_offset = torch.tensor(e_offset, device=obs.device)
+            repeat_num_tensor = torch.tensor(repeat_num, dtype=torch.long,device=obs.device)
+            e_offset = torch.repeat_interleave(num_nodes_cum[:-1], repeat_num_tensor)
+            edges_new[:, -e_offset.shape[0]:] += e_offset
+        return obs, edges_new, num_nodes, num_nodes_cum
 
     def forward(self, x):
         stages = ['attribute_transform', 'execution']
@@ -101,6 +130,14 @@ class DevPolicy(nn.Module):
                 # use only sim_obs as control nn input
                 x = sim_obs
             x = self.control_norm(x)
+
+            if self.frame_gnn is not None: 
+                bz = x.shape[0]
+                x, edges, _, num_nodes_cum_control = self.batch_data_graph(x_dict['execution'], x)
+                # self.frame_gnn.change_morphology(edges, num_nodes)
+                x = self.frame_gnn(x, edges, num_nodes_cum_control)
+                x = x.reshape(bz, -1)
+
             x = self.control_mlp(x)
             control_action_mean = self.control_action_mean(x)
             control_action_log_std = self.control_action_log_std.expand_as(control_action_mean)

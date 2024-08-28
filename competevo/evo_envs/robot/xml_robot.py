@@ -582,8 +582,8 @@ class Robot:
         return etree.tostring(self.tree, pretty_print=True)
 
     def demap_params(self, params):
-        if not np.all((params <= 1.0) & (params >= -1.0)):
-            print(f'param out of bounds: {params}')
+        # if not np.all((params <= 1.0) & (params >= -1.0)):
+        #     print(f'param out of bounds: {params}')
         params = np.clip(params, -1.0, 1.0)
         if self.param_mapping == 'sin':
             params = np.arcsin(params) / (0.5 * np.pi)
@@ -664,9 +664,9 @@ if __name__ == "__main__":
 
     params_names = xml_robot.get_params(get_name=True)
     params = xml_robot.get_params()
-    print(params_names, params)
+    # print(params_names, params)
     new_params = params + .5
-    print(new_params)
+    # print(new_params)
     xml_robot.set_params(new_params)
     params_new = xml_robot.get_params()
 
