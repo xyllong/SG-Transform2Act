@@ -135,7 +135,7 @@ class DevPolicy(nn.Module):
                 bz = x.shape[0]
                 x, edges, _, num_nodes_cum_control = self.batch_data_graph(x_dict['execution'], x)
                 # self.frame_gnn.change_morphology(edges, num_nodes)
-                x = self.frame_gnn(x, edges, num_nodes_cum_control)
+                x = self.frame_gnn(x, edges, num_nodes_cum_control,dev=True)
                 x = x.reshape(bz, -1)
 
             x = self.control_mlp(x)
