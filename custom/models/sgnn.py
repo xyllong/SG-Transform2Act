@@ -274,7 +274,7 @@ class SGNN(nn.Module):
 
         if dev:
             interval_length = num_nodes_cum[0]
-            root_node = torch.arange(len(num_nodes_cum))*interval_length
+            root_node = torch.arange(len(num_nodes_cum)).to(Z0.device)*interval_length
             # 生成 root_node
             root_node = root_node.repeat_interleave(interval_length).to(Z0.device)
         else:
