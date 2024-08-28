@@ -408,11 +408,11 @@ class DevBugFighter(BugFighter):
         # Observe self
         self_forces = np.abs(np.clip(
             self.get_cfrc_ext(), -self.CFRC_CLIP, self.CFRC_CLIP))
-        obs  = [
-            self.get_qpos().flat,           # self all positions
-            self.get_qvel().flat,           # self all velocities
-            self_forces.flat,               # self all forces
-        ]
+        # obs  = [
+        #     self.get_qpos().flat,           # self all positions
+        #     self.get_qvel().flat,           # self all velocities
+        #     self_forces.flat,               # self all forces
+        # ]
 
         # self_forces_id = np.array([[0,0,0],[0,1,2],[1,2,3],[0,4,5],[4,5,6],[0,7,8],[7,8,9],[0,10,11],[10,11,12],[0,13,14],[13,14,15],[0,16,17],[16,17,18]])
 
@@ -434,8 +434,9 @@ class DevBugFighter(BugFighter):
         # ])
         qpos = self.get_qpos()
         qvel = self.get_qvel()
-        root_pos = qpos[:2]
-        root_pos = np.append(root_pos, 0)
+        # root_pos = qpos[:2]
+        # root_pos = np.append(root_pos, 0)
+        root_pos = np.array([0,0,0])
         obs = []
         idx = 0
         agent_body = self.tree.find('body')
@@ -443,8 +444,6 @@ class DevBugFighter(BugFighter):
             cur_name = body.get('name')
             # forces = [self_forces[id] for id in self_forces_id[idx]]
             if cur_name == "0":
-                vel = np.array([0])
-
                 obs_i = [self.env.data.body(self.scope + "/" +cur_name).xipos - root_pos, other_qpos, np.array([0,0,9.8]),  self_forces[idx], qvel[:6],self.env.data.body(self.scope + "/" +cur_name).xipos[2:3],np.zeros(2)]
             else:
                 qs, qe = get_single_body_qposaddr(self.env.model, self.scope + "/" + cur_name)
