@@ -6,8 +6,6 @@ import os
 from lxml.etree import XMLParser, parse, ElementTree, Element, SubElement
 from lxml import etree
 from io import BytesIO
-from lib.utils import get_single_body_qposaddr,get_graph_fc_edges
-from competevo.evo_envs.robot.xml_robot import Robot
 
 SCALE_MAX = 0.5
 
@@ -37,8 +35,6 @@ class DevAntFighter(RoboAntFighter):
         self.cur_xml_str = etree.tostring(self.tree, pretty_print=True).decode('utf-8')
 
         self.cfg = cfg
-
-        self.robot = Robot(cfg.robot_cfg, xml=xml_path)
 
         self.stage = "attribute_transform"
         self.scale_vector = np.random.uniform(low=-1., high=1., size=20)
@@ -310,62 +306,32 @@ class DevAntFighter(RoboAntFighter):
         # Observe self
         self_forces = np.abs(np.clip(
             self.get_cfrc_ext(), -self.CFRC_CLIP, self.CFRC_CLIP))
-        # obs  = [
-        #     self.get_qpos().flat,           # self all positions
-        #     self.get_qvel().flat,           # self all velocities
-        #     self_forces.flat,               # self all forces
-        # ]
+        obs  = [
+            self.get_qpos().flat,           # self all positions
+            self.get_qvel().flat,           # self all velocities
+            self_forces.flat,               # self all forces
+        ]
         
         # Observe opponents
         other_qpos = self.get_other_qpos()
-        # if other_qpos.shape == (0,):
-        #     # other_qpos = np.zeros(2) # x and y
-        #     other_qpos = np.random.uniform(-5, 5, 2)
+        if other_qpos.shape == (0,):
+            # other_qpos = np.zeros(2) # x and y
+            other_qpos = np.random.uniform(-5, 5, 2)
 
-        # obs.extend([
-        #     other_qpos[:2].flat,    # opponent torso position
-        # ])
+        obs.extend([
+            other_qpos[:2].flat,    # opponent torso position
+        ])
 
-        # torso_xmat = self.get_torso_xmat()
-        # # print(torso_xmat)
-        # obs.extend([
-        #     torso_xmat.flat,
-        # ])
+        torso_xmat = self.get_torso_xmat()
+        # print(torso_xmat)
+        obs.extend([
+            torso_xmat.flat,
+        ])
 
-        qpos = self.get_qpos()
-        qvel = self.get_qvel()
-        root_pos = np.array([0,0,0])
-        obs = []
-        idx = 0
-        agent_body = self.tree.find('body')
-        for body in agent_body.iter('body'):
-            cur_name = body.get('name')
-            # forces = [self_forces[id] for id in self_forces_id[idx]]
-            if cur_name == "0":
-                obs_i = [self.env.data.body(self.scope + "/" +cur_name).xipos - root_pos, other_qpos, np.array([0,0,9.8]),  self_forces[idx], qvel[:6],self.env.data.body(self.scope + "/" +cur_name).xipos[2:3],np.zeros(2)]
-            else:
-                qs, qe = get_single_body_qposaddr(self.env.model, self.scope + "/" + cur_name)
-                if qe - qs >= 1:
-                    assert qe - qs == 1
-                    angle =  np.append(self.env.data.qpos[qs:qe], self.env.data.qvel[qs-1-self.id:qe-1-self.id])
-                else:
-                    angle = np.zeros(2)
-                obs_i = [self.env.data.body(self.scope + "/" +cur_name).xipos - root_pos, other_qpos,  np.array([0,0,9.8]),  self_forces[idx], np.zeros(6),self.env.data.body(self.scope + "/" +cur_name).xipos[2:3],angle]
-
-
-            obs_i = np.concatenate(obs_i)
-            obs.append(obs_i)
-            idx += 1
-
-
-        num_nodes = np.array([len(obs)])
         sim_obs = np.concatenate(obs)
         assert np.isfinite(sim_obs).all(), "Ant observation is not finite!!"
 
-        edges = self.robot.get_gnn_edges()
-        # edges = get_graph_fc_edges(num_nodes[0])
-
-        obs = [np.array([self.if_use_transform_action()]), self.scale_vector, edges, num_nodes, sim_obs]
+        obs = [np.array([self.if_use_transform_action()]), self.scale_vector, sim_obs]
 
         return obs
 
@@ -379,7 +345,7 @@ class DevAntFighter(RoboAntFighter):
         low = -high
         self.observation_space = Box(low, high)
 
-    def reset_agent(self,**kwargs):
+    def reset_agent(self):
         xpos = self.get_qpos()[0]
         if xpos * self.GOAL > 0:
             self.set_goal(-self.GOAL)
