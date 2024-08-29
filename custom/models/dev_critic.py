@@ -26,7 +26,7 @@ class DevValue(nn.Module):
 
 
         if 'egnn' in cfg.cfg and cfg.cfg['egnn'] and self.agent.scope == 'agent0':
-            self.frame_gnn = SGNN(state_dim = self.sim_obs_dim//len(self.agent.body_ids), attr_fixed_dim = 0, attr_design_dim = 0, msg_dim = 32, p_step = 2, z_num = 7)
+            self.frame_gnn = SGNN(state_dim = self.sim_obs_dim//len(self.agent.body_ids), attr_fixed_dim = 0, attr_design_dim = 0, msg_dim = 32, p_step = 3, z_num = 7)
         else:
             self.frame_gnn = None
 
