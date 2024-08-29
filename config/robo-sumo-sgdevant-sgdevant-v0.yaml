@@ -1,10 +1,10 @@
-env_name: robo-sumo-devbugs-v0
+env_name: robo-sumo-sgdevant-sgdevant-v0
 runner_type: multi-evo-agent-runner
 
 agent_specs:
   batch_design: true
 
-egnn: False
+egnn: True
 
 robot:
   param_mapping: sin
