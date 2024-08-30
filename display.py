@@ -30,6 +30,7 @@ def main():
     parser.add_argument('--ckpt_dir', type=str, default=None)
     parser.add_argument('--ckpt', type=str, default='best')
     parser.add_argument('--symmetric', type=str2bool, default=True)
+    parser.add_argument('--gpu_index', type=int, default=0)
     args = parser.parse_args()
     # Load config file
     args.run_dir = os.path.split(args.cfg)[0] + '/'
@@ -63,7 +64,9 @@ def main():
     dtype = torch.float64
     torch.set_default_dtype(dtype)
     # device = torch.device('cpu')
-    device = torch.device('cuda', index=0) 
+    device = torch.device('cuda', index=args.gpu_index) 
+    if torch.cuda.is_available():
+        torch.cuda.set_device(args.gpu_index)
     # np.random.seed(cfg.seed)
     # torch.manual_seed(cfg.seed)
     
@@ -81,7 +84,7 @@ def main():
     elif cfg.runner_type == "multi-evo-agent-runner":
         runner = MultiEvoAgentRunner(cfg, logger, dtype, device, training=False, ckpt_dir=args.ckpt_dir, ckpt=ckpt)
     
-    runner.display(num_episode=5, mean_action=False)
+    runner.display(num_episode=50, mean_action=False)
 
 if __name__ == "__main__":
     main()
