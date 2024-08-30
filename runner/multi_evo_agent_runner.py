@@ -626,14 +626,14 @@ class MultiEvoAgentRunner(BaseRunner):
                             actions.append(learner.policy_net.select_action(state_var[i], use_mean_action).squeeze().numpy().astype(np.float64))
                 next_states, env_rewards, terminateds, truncated, infos = self.env.step(actions)
                 
-                # 使用 MuJoCo 的渲染方法
-                frame = self.env.env_scene.mujoco_renderer.render(render_mode='rgb_array')
-                # frame = np.flipud(frame)  # MuJoCo 的渲染结果可能需要翻转
+                # # 使用 MuJoCo 的渲染方法
+                # frame = self.env.env_scene.mujoco_renderer.render(render_mode='rgb_array')
+                # # frame = np.flipud(frame)  # MuJoCo 的渲染结果可能需要翻转
 
-                #保存图片
-                img = Image.fromarray(frame)
-                # img.save('test.jpg')
-                imgs.append(img)
+                # #保存图片
+                # img = Image.fromarray(frame)
+                # # img.save('test.jpg')
+                # imgs.append(img)
 
                 # normalize states
                 for i, learner in self.learners.items():
@@ -668,8 +668,8 @@ class MultiEvoAgentRunner(BaseRunner):
             
             total_reward.append(episode_reward)
 
-            if _ == 0:
-                imgs[0].save('test.gif', save_all=True, append_images=imgs[1:], duration=30, loop=0)
+            # if _ == 0:
+            #     imgs[0].save('test.gif', save_all=True, append_images=imgs[1:], duration=30, loop=0)
 
         def average(list):
             total = sum(list)
@@ -700,10 +700,10 @@ class MultiEvoAgentRunner(BaseRunner):
         # # 这个文件的第一列是epoch（self.learners[0].epoch），第二列是agent_0的平均reward，第三列是agent_0的胜率，第四列是agent_1的平均reward，第五列是agent_1的胜率
         # import csv
 
-        # # Append results to test.csv
-        # with open('test.csv', mode='a', newline='') as file:
-        #     writer = csv.writer(file)
-        #     writer.writerow([self.learners[0].epoch+1, agent0_reward, agent0_win_rate, agent1_reward, agent1_win_rate])
+        # Append results to test.csv
+        with open('test.csv', mode='a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow([self.learners[0].epoch+1, agent0_reward, agent0_win_rate, agent1_reward, agent1_win_rate])
 
 
         
