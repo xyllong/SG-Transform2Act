@@ -51,10 +51,10 @@ register(
 )
 
 register(
-    id='robo-sumo-devbug-sgdevbug-v0',
+    id='robo-sumo-sgdevbug-devbug-v0',
     entry_point='competevo.evo_envs:RoboSumoDevEnv',
     disable_env_checker=True,
-    kwargs={'agent_names': ['dev_bug_fighter', 'dev_bug_fighter'],
+    kwargs={'agent_names': ['sg_dev_bug_fighter', 'dev_bug_fighter'],
             'world_xml_path': "./competevo/evo_envs/assets/world_body_arena.xml",
             'init_pos': [(-1, 0, 1.5), (1, 0, 1.5)],
             'ini_euler': [(0, 0, 0), (0, 0, 180)],
@@ -67,10 +67,10 @@ register(
 )
 
 register(
-    id='robo-sumo-sgdevbug-sgdevbug-v0',
+    id='robo-sumo-sgdevbugs-v0',
     entry_point='competevo.evo_envs:RoboSumoDevEnv',
     disable_env_checker=True,
-    kwargs={'agent_names': ['dev_bug_fighter', 'dev_bug_fighter'],
+    kwargs={'agent_names': ['sg_dev_bug_fighter', 'sg_dev_bug_fighter'],
             'world_xml_path': "./competevo/evo_envs/assets/world_body_arena.xml",
             'init_pos': [(-1, 0, 1.5), (1, 0, 1.5)],
             'ini_euler': [(0, 0, 0), (0, 0, 180)],
@@ -86,7 +86,7 @@ register(
     id='robo-sumo-sgdevant-devant-v0',
     entry_point='competevo.evo_envs:RoboSumoDevEnv',
     disable_env_checker=True,
-    kwargs={'agent_names': ['dev_ant_fighter', 'dev_ant_fighter'],
+    kwargs={'agent_names': ['sg_dev_ant_fighter', 'dev_ant_fighter'],
             'world_xml_path': "./competevo/evo_envs/assets/world_body_arena.xml",
             'init_pos': [(-1, 0, 1.5), (1, 0, 1.5)],
             'ini_euler': [(0, 0, 0), (0, 0, 180)],
@@ -102,7 +102,7 @@ register(
     id='test-robo-sumo-sgdevant-devant-v0',
     entry_point='competevo.evo_envs:RoboSumoDevEnv',
     disable_env_checker=True,
-    kwargs={'agent_names': ['test_dev_ant_fighter', 'test_dev_ant_fighter'],
+    kwargs={'agent_names': ['test_sg_dev_ant_fighter', 'test_dev_ant_fighter'],
             'world_xml_path': "./competevo/evo_envs/assets/world_body_arena.xml",
             'init_pos': [(-1, 0, 1.5), (1, 0, 1.5)],
             'ini_euler': [(0, 0, 0), (0, 0, 180)],
@@ -115,10 +115,10 @@ register(
 )
 
 register(
-    id='robo-sumo-sgdevant-sgdevant-v0',
+    id='robo-sumo-sgdevants-v0',
     entry_point='competevo.evo_envs:RoboSumoDevEnv',
     disable_env_checker=True,
-    kwargs={'agent_names': ['dev_ant_fighter', 'dev_ant_fighter'],
+    kwargs={'agent_names': ['sg_dev_ant_fighter', 'sg_dev_ant_fighter'],
             'world_xml_path': "./competevo/evo_envs/assets/world_body_arena.xml",
             'init_pos': [(-1, 0, 1.5), (1, 0, 1.5)],
             'ini_euler': [(0, 0, 0), (0, 0, 180)],
