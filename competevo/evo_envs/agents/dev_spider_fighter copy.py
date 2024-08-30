@@ -6,12 +6,10 @@ import os
 from lxml.etree import XMLParser, parse, ElementTree, Element, SubElement
 from lxml import etree
 from io import BytesIO
-from lib.utils import get_single_body_qposaddr,get_graph_fc_edges
-from competevo.evo_envs.robot.xml_robot import Robot
 
-SCALE_MAX = 0.5
+SCALE_MAX = 0.8#0.5
 
-class DevAntFighter(RoboAntFighter):
+class DevSpiderFighter(SpiderFighter):
     CFRC_CLIP = 100.
 
     COST_COEFS = {
@@ -29,8 +27,8 @@ class DevAntFighter(RoboAntFighter):
 
     def __init__(self, agent_id, cfg, xml_path=None, n_agents=2):
         if xml_path is None:
-            xml_path = os.path.join(os.path.dirname(__file__), "assets", "dev_ant_body.xml")
-        super(DevAntFighter, self).__init__(agent_id, xml_path, n_agents)
+            xml_path = os.path.join(os.path.dirname(__file__), "assets", "dev_spider_body.xml")
+        super(DevSpiderFighter, self).__init__(agent_id, xml_path, n_agents)
 
         parser = XMLParser(remove_blank_text=True)
         self.tree = parse(xml_path, parser=parser)
@@ -38,17 +36,15 @@ class DevAntFighter(RoboAntFighter):
 
         self.cfg = cfg
 
-        self.robot = Robot(cfg.robot_cfg, xml=xml_path)
-
         self.stage = "attribute_transform"
-        self.scale_vector = np.random.uniform(low=-1., high=1., size=20)
+        self.scale_vector = np.random.uniform(low=-1., high=1., size=40)
     
     @property
     def flag(self):
         return "dev"
 
     def set_env(self, env):
-        super(RoboAntFighter, self).set_env(env)
+        super(SpiderFighter, self).set_env(env)
         self.arena_id = self.env.geom_names.index('arena')
         self.arena_height = self.env.model.geom_size[self.arena_id][1] * 2
 
@@ -70,7 +66,7 @@ class DevAntFighter(RoboAntFighter):
 
         design_params = self.scale_vector * SCALE_MAX
         a = design_params + 1.
-        b = design_params*0.8 + 1 # for gear only
+        b = design_params*0.5 + 1 # for gear only
 
         def multiply_str(s, m):
             res = [str(float(x) * m) for x in s.split()]
@@ -233,6 +229,158 @@ class DevAntFighter(RoboAntFighter):
                     p = multiply_str(p, a[19])
                     geom.set("fromto", p)
 
+            # 5
+            if cur_name == "5":
+                geom = body.find('geom') #5
+                if geom is not None:
+                    p = geom.get("fromto")
+                    p = multiply_str(p, a[20])
+                    geom.set("fromto", p)
+
+            if cur_name == "15":
+                p = body.get("pos")
+                p = multiply_str(p, a[20])
+                body.set("pos", p)
+
+                geom = body.find('geom') #15
+                p = geom.get("size")
+                p = multiply_str(p, a[21])
+                geom.set("size", p)
+
+                if geom is not None:
+                    p = geom.get("fromto")
+                    p = multiply_str(p, a[22])
+                    geom.set("fromto", p)
+
+            if cur_name == "115":
+                p = body.get("pos")
+                p = multiply_str(p, a[22])
+                body.set("pos", p)
+
+                geom = body.find('geom') #115
+                p = geom.get("size")
+                p = multiply_str(p, a[23])
+                geom.set("size", p)
+
+                if geom is not None:
+                    p = geom.get("fromto")
+                    p = multiply_str(p, a[24])
+                    geom.set("fromto", p)
+            
+            # 6
+            if cur_name == "6":
+                geom = body.find('geom') #6
+                if geom is not None:
+                    p = geom.get("fromto")
+                    p = multiply_str(p, a[25])
+                    geom.set("fromto", p)
+
+            if cur_name == "16":
+                p = body.get("pos")
+                p = multiply_str(p, a[25])
+                body.set("pos", p)
+
+                geom = body.find('geom') #16
+                p = geom.get("size")
+                p = multiply_str(p, a[26])
+                geom.set("size", p)
+
+                if geom is not None:
+                    p = geom.get("fromto")
+                    p = multiply_str(p, a[27])
+                    geom.set("fromto", p)
+
+            if cur_name == "116":
+                p = body.get("pos")
+                p = multiply_str(p, a[27])
+                body.set("pos", p)
+
+                geom = body.find('geom') #116
+                p = geom.get("size")
+                p = multiply_str(p, a[28])
+                geom.set("size", p)
+
+                if geom is not None:
+                    p = geom.get("fromto")
+                    p = multiply_str(p, a[29])
+                    geom.set("fromto", p)
+
+            # 7
+            if cur_name == "7":
+                geom = body.find('geom') #7
+                if geom is not None:
+                    p = geom.get("fromto")
+                    p = multiply_str(p, a[30])
+                    geom.set("fromto", p)
+
+            if cur_name == "17":
+                p = body.get("pos")
+                p = multiply_str(p, a[30])
+                body.set("pos", p)
+
+                geom = body.find('geom') #17
+                p = geom.get("size")
+                p = multiply_str(p, a[31])
+                geom.set("size", p)
+
+                if geom is not None:
+                    p = geom.get("fromto")
+                    p = multiply_str(p, a[32])
+                    geom.set("fromto", p)
+
+            if cur_name == "117":
+                p = body.get("pos")
+                p = multiply_str(p, a[32])
+                body.set("pos", p)
+
+                geom = body.find('geom') #117
+                p = geom.get("size")
+                p = multiply_str(p, a[33])
+                geom.set("size", p)
+
+                if geom is not None:
+                    p = geom.get("fromto")
+                    p = multiply_str(p, a[34])
+                    geom.set("fromto", p)
+            
+            # 8
+            if cur_name == "8":
+                geom = body.find('geom') #8
+                if geom is not None:
+                    p = geom.get("fromto")
+                    p = multiply_str(p, a[35])
+                    geom.set("fromto", p)
+
+            if cur_name == "18":
+                p = body.get("pos")
+                p = multiply_str(p, a[35])
+                body.set("pos", p)
+
+                geom = body.find('geom') #18
+                p = geom.get("size")
+                p = multiply_str(p, a[36])
+                geom.set("size", p)
+
+                if geom is not None:
+                    p = geom.get("fromto")
+                    p = multiply_str(p, a[37])
+                    geom.set("fromto", p)
+
+            if cur_name == "118":
+                p = body.get("pos")
+                p = multiply_str(p, a[37])
+                body.set("pos", p)
+
+                geom = body.find('geom') #118
+                p = geom.get("size")
+                p = multiply_str(p, a[38])
+                geom.set("size", p)
+
+                if geom is not None:
+                    p = geom.get("fromto")
+                    p = multiply_str(p, a[39])
+                    geom.set("fromto", p)
+
         agent_actuator = self.tree.find('actuator')
         for motor in agent_actuator.iter("motor"):
             cur_name = motor.get("name").split('_')[0]
@@ -276,10 +424,51 @@ class DevAntFighter(RoboAntFighter):
                 p = motor.get("gear")
                 p = multiply_str(p, b[18])
                 motor.set("gear", p)
+            
+            if cur_name == "15":
+                p = motor.get("gear")
+                p = multiply_str(p, b[21])
+                motor.set("gear", p)
+
+            if cur_name == "115":
+                p = motor.get("gear")
+                p = multiply_str(p, b[23])
+                motor.set("gear", p)
+
+            if cur_name == "16":
+                p = motor.get("gear")
+                p = multiply_str(p, b[26])
+                motor.set("gear", p)
+
+            if cur_name == "116":
+                p = motor.get("gear")
+                p = multiply_str(p, b[28])
+                motor.set("gear", p)
+
+            if cur_name == "17":
+                p = motor.get("gear")
+                p = multiply_str(p, b[31])
+                motor.set("gear", p)
+
+            if cur_name == "117":
+                p = motor.get("gear")
+                p = multiply_str(p, b[33])
+                motor.set("gear", p)
+
+            if cur_name == "18":
+                p = motor.get("gear")
+                p = multiply_str(p, b[36])
+                motor.set("gear", p)
+
+            if cur_name == "118":
+                p = motor.get("gear")
+                p = multiply_str(p, b[38])
+                motor.set("gear", p)
 
         # print(etree.tostring(self.tree, pretty_print=True).decode('utf-8'))
         self.cur_xml_str = etree.tostring(self.tree, pretty_print=True).decode('utf-8')
         # print(self.cur_xml_str)
+
 
     def before_step(self):
         self.posbefore = self.get_qpos()[:2].copy()
@@ -310,63 +499,32 @@ class DevAntFighter(RoboAntFighter):
         # Observe self
         self_forces = np.abs(np.clip(
             self.get_cfrc_ext(), -self.CFRC_CLIP, self.CFRC_CLIP))
-        # obs  = [
-        #     self.get_qpos().flat,           # self all positions
-        #     self.get_qvel().flat,           # self all velocities
-        #     self_forces.flat,               # self all forces
-        # ]
+        obs  = [
+            self.get_qpos().flat,           # self all positions
+            self.get_qvel().flat,           # self all velocities
+            self_forces.flat,               # self all forces
+        ]
         
         # Observe opponents
         other_qpos = self.get_other_qpos()
-        # if other_qpos.shape == (0,):
-        #     # other_qpos = np.zeros(2) # x and y
-        #     other_qpos = np.random.uniform(-5, 5, 2)
+        if other_qpos.shape == (0,):
+            # other_qpos = np.zeros(2) # x and y
+            other_qpos = np.random.uniform(-5, 5, 2)
 
-        # obs.extend([
-        #     other_qpos[:2].flat,    # opponent torso position
-        # ])
+        obs.extend([
+            other_qpos[:2].flat,    # opponent torso position
+        ])
 
-        # torso_xmat = self.get_torso_xmat()
-        # # print(torso_xmat)
-        # obs.extend([
-        #     torso_xmat.flat,
-        # ])
+        torso_xmat = self.get_torso_xmat()
+        # print(torso_xmat)
+        obs.extend([
+            torso_xmat.flat,
+        ])
 
-        qpos = self.get_qpos()
-        qvel = self.get_qvel()
-        root_pos = np.array([0,0,0])
-        obs = []
-        idx = 0
-        agent_body = self.tree.find('body')
-        for body in agent_body.iter('body'):
-            cur_name = body.get('name')
-            # forces = [self_forces[id] for id in self_forces_id[idx]]
-            if cur_name == "0":
-                obs_i = [self.env.data.body(self.scope + "/" +cur_name).xipos - root_pos, other_qpos, np.array([0,0,9.8]),  self_forces[idx], qvel[:6],self.env.data.body(self.scope + "/" +cur_name).xipos[2:3],np.zeros(2)]
-            else:
-                qs, qe = get_single_body_qposaddr(self.env.model, self.scope + "/" + cur_name)
-                if qe - qs >= 1:
-                    assert qe - qs == 1
-                    angle =  np.append(self.env.data.qpos[qs:qe], self.env.data.qvel[qs-1-self.id:qe-1-self.id])
-                else:
-                    angle = np.zeros(2)
-                obs_i = [self.env.data.body(self.scope + "/" +cur_name).xipos - root_pos, other_qpos,  np.array([0,0,9.8]),  self_forces[idx], np.zeros(6),self.env.data.body(self.scope + "/" +cur_name).xipos[2:3],angle]
-
-
-            obs_i = np.concatenate(obs_i)
-            obs.append(obs_i)
-            idx += 1
-
-
-        num_nodes = np.array([len(obs)])
         sim_obs = np.concatenate(obs)
         assert np.isfinite(sim_obs).all(), "Ant observation is not finite!!"
 
-        edges = self.robot.get_gnn_edges()
-        # edges = get_graph_fc_edges(num_nodes[0])
-
-        obs = [np.array([self.if_use_transform_action()]), self.scale_vector, edges, num_nodes, sim_obs]
-
+        obs = [np.array([self.if_use_transform_action()]), self.scale_vector, sim_obs]
         return obs
 
     def get_torso_xmat(self):
@@ -379,7 +537,7 @@ class DevAntFighter(RoboAntFighter):
         low = -high
         self.observation_space = Box(low, high)
 
-    def reset_agent(self,**kwargs):
+    def reset_agent(self):
         xpos = self.get_qpos()[0]
         if xpos * self.GOAL > 0:
             self.set_goal(-self.GOAL)
@@ -389,4 +547,4 @@ class DevAntFighter(RoboAntFighter):
             self.move_left = False
         
         self.stage = 'attribute_transform'
-        self.scale_vector = np.random.uniform(low=-1., high=1., size=20)
+        self.scale_vector = np.random.uniform(low=-1., high=1., size=40)

@@ -84,7 +84,7 @@ def main():
     elif cfg.runner_type == "multi-evo-agent-runner":
         runner = MultiEvoAgentRunner(cfg, logger, dtype, device, training=False, ckpt_dir=args.ckpt_dir, ckpt=ckpt)
     
-    runner.display(num_episode=50, mean_action=False)
+    runner.display(num_episode=1, mean_action=False)
 
 if __name__ == "__main__":
     main()

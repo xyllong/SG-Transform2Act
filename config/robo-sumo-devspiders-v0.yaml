@@ -4,6 +4,35 @@ runner_type: multi-evo-agent-runner
 agent_specs:
   batch_design: true
 
+egnn: False
+
+robot:
+  param_mapping: sin
+  no_root_offset: true
+  
+  body_params:
+    offset:
+      type: 'xy'
+  # #     lb: [-0.5, -0.5]
+  # #     ub: [0.5, 0.5]
+      lb: [-0.4, -0.4]
+      ub: [0.4, 0.4]
+
+  joint_params: {}
+
+  geom_params:
+    size:
+      lb: 0.03
+      ub: 0.10
+    # ext_start:
+    #   lb: 0.0
+    #   ub: 0.1
+
+  actuator_params:
+    gear:
+      lb: 20
+      ub: 400
+
 # training parameters
 gamma: 0.995
 tau: 0.95
@@ -37,7 +66,7 @@ clip_epsilon: 0.2
 min_batch_size: 50000
 mini_batch_size: 2048
 num_optim_epoch: 10
-max_epoch_num: 2000
+max_epoch_num: 1000
 seed: 42
 save_model_interval: 1
 
