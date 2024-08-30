@@ -317,7 +317,7 @@ class MultiEvoAgentRunner(BaseRunner):
                 ma_logger[i].start_episode(self.env)
             
             for t in range(10000):
-                state_var = mix_tensorfy(states, self.device)
+                state_var = mix_tensorfy(states)
                 use_mean_action = mean_action or torch.bernoulli(torch.tensor([1 - self.noise_rate])).item()
                 # select actions
                 actions = []
