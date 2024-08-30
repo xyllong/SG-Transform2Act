@@ -62,9 +62,10 @@ def main():
     # ----------------------------------------------------------------------------#
     dtype = torch.float64
     torch.set_default_dtype(dtype)
-    device = torch.device('cpu')
-    np.random.seed(cfg.seed)
-    torch.manual_seed(cfg.seed)
+    # device = torch.device('cpu')
+    device = torch.device('cuda', index=0) 
+    # np.random.seed(cfg.seed)
+    # torch.manual_seed(cfg.seed)
     
     # ----------------------------------------------------------------------------#
     # Evaluation
@@ -80,7 +81,7 @@ def main():
     elif cfg.runner_type == "multi-evo-agent-runner":
         runner = MultiEvoAgentRunner(cfg, logger, dtype, device, training=False, ckpt_dir=args.ckpt_dir, ckpt=ckpt)
     
-    runner.display(num_episode=50, mean_action=True)
+    runner.display(num_episode=5, mean_action=False)
 
 if __name__ == "__main__":
     main()

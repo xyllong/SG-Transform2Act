@@ -24,6 +24,10 @@ class MultiDevAgentEnv(MujocoEnv):
             os.path.join(os.path.dirname(__file__), "assets", "dev_ant_body.xml"),
             DevAntFighter
         ),
+        'test_dev_ant_fighter': (
+            os.path.join(os.path.dirname(__file__), "assets", "test_dev_ant_body.xml"),
+            DevAntFighter
+        ),
         'dev_bug':(
             os.path.join(os.path.dirname(__file__), "assets", "dev_bug_body.xml"),
             DevBug

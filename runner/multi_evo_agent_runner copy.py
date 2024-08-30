@@ -9,7 +9,6 @@ from custom.utils.logger import MaLoggerRL
 from lib.rl.core.trajbatch import MaTrajBatch, MaTrajBatchDisc
 from lib.utils.torch import *
 from lib.utils.memory import Memory
-from PIL import Image
 
 import csv
 import time
@@ -81,41 +80,27 @@ class MultiEvoAgentRunner(BaseRunner):
         t0 = time.time()
 
         """sampling data"""
-        batches, logs, t_win_rate = self.sample(self.cfg.min_batch_size)
+        batches, logs, _ = self.sample(self.cfg.min_batch_size)
         t1 = time.time()
         self.logger.info(
             "Sampling {} steps by {} slaves, spending {:.2f} s.".format(
             self.cfg.min_batch_size, self.num_threads, t1-t0)
         )
         
-        
         """updating policy"""
-        policy_losses = {}
-        value_losses = {}
         for i, learner in self.learners.items():
-            policy_loss, value_loss = learner.update_params(batches[i])
-            policy_losses[i] = policy_loss
-            value_losses[i] = value_loss
+            learner.update_params(batches[i])
         t2 = time.time()
         self.logger.info("Policy update, spending: {:.2f} s.".format(t2-t1))
 
         """evaluate policy"""
-        _, log_evals, win_rate = self.sample(self.cfg.eval_batch_size, mean_action=True, nthreads=10, eval=True)
+        _, log_evals, win_rate = self.sample(self.cfg.eval_batch_size, mean_action=True, nthreads=10)
         t3 = time.time()
         self.logger.info("Evaluation time: {:.2f} s.".format(t3-t2))
 
-        # """evaluate best policy"""
-        # _, log_best_evals, b_win_rate = self.sample(self.cfg.eval_batch_size, mean_action=True, nthreads=10, best = True)
-        # t4 = time.time()
-        # self.logger.info("Evaluation time: {:.2f} s.".format(t4-t3))
-
         info = {
             'logs': logs, 'log_evals': log_evals, 
-            # 'log_best_evals': log_best_evals,
-            't_win_rate': t_win_rate,
-            'win_rate': win_rate,
-            # 'b_win_rate': b_win_rate,
-            'policy_losses': policy_losses, 'value_losses': value_losses
+            'win_rate': win_rate
         }
         self.logger.info('Total time: {:10.2f} min'.format((t3 - self.t_start)/60))
         return info
@@ -123,41 +108,14 @@ class MultiEvoAgentRunner(BaseRunner):
     def log_optimize_policy(self, info):
         epoch = self.epoch
         cfg = self.cfg
-        logs, log_evals, t_win_rate, win_rate,  policy_losses, value_losses= info['logs'], info['log_evals'], info['t_win_rate'], info['win_rate'], info['policy_losses'], info['value_losses']
-        # log_best_evals, b_win_rate, info['b_win_rate'],  info['log_best_evals'],
+        logs, log_evals, win_rate = info['logs'], info['log_evals'], info['win_rate']
         logger, writer = self.logger, self.writer
-
-        # print("0:", logs[0].total_reward, logs[0].num_episodes, logs[0].avg_episode_reward)
-        # print("1:", logs[1].total_reward, logs[1].num_episodes, logs[1].avg_episode_reward)
             
         for i, learner in self.learners.items():
-            logger.info("Agent_{} gets policy loss: {:.2f}.".format(i, policy_losses[i]))
-            logger.info("Agent_{} gets value loss: {:.2f}.".format(i, value_losses[i]))
+            logger.info("Agent_{} gets eval reward: {:.2f}.".format(i, log_evals[i].avg_episode_reward))
+            logger.info("Agent_{} gets win rate: {:.2f}.".format(i, win_rate[i]))
 
-            logger.info("Agent_{} gets train_num_episodes: {:.2f}.".format(i, logs[i].num_episodes))
-            logger.info("Agent_{} gets train_num_steps: {:.2f}.".format(i, logs[i].num_steps))
-            logger.info("Agent_{} gets train_avg_episode_len: {:.2f}.".format(i, logs[i].avg_episode_len))
-            logger.info("Agent_{} gets train_avg_episode_reward: {:.2f}.".format(i, logs[i].avg_episode_reward))
-            logger.info("Agent_{} gets train_min_dist: {:.2f}.".format(i, logs[i].min_dist))
-            logger.info("Agent_{} gets train_max_dist: {:.2f}.".format(i, logs[i].max_dist))
-            logger.info("Agent_{} gets train_win rate: {:.2f}.".format(i, t_win_rate[i]))
-
-            logger.info("Agent_{} gets eval_num_episodes: {:.2f}.".format(i, log_evals[i].num_episodes))
-            logger.info("Agent_{} gets eval_num_steps: {:.2f}.".format(i, log_evals[i].num_steps))
-            logger.info("Agent_{} gets eval eval_avg_episode_len: {:.2f}.".format(i, log_evals[i].avg_episode_len))
-            logger.info("Agent_{} gets eval eval_avg_episode_reward: {:.2f}.".format(i, log_evals[i].avg_episode_reward))
-            logger.info("Agent_{} gets eval_min_dist: {:.2f}.".format(i, log_evals[i].min_dist))
-            logger.info("Agent_{} gets eval_max_dist: {:.2f}.".format(i, log_evals[i].max_dist))
-            logger.info("Agent_{} gets eval_win rate: {:.2f}.".format(i, win_rate[i]))
-
-            # logger.info("Agent_{} gets best_eval_num_episodes: {:.2f}.".format(i, log_best_evals[i].num_episodes))
-            # logger.info("Agent_{} gets best_eval_num_steps: {:.2f}.".format(i, log_best_evals[i].num_steps))
-            # logger.info("Agent_{} gets best_eval_avg_episode_len: {:.2f}.".format(i, log_best_evals[i].avg_episode_len))
-            # logger.info("Agent_{} gets best_eval_avg_episode_reward: {:.2f}.".format(i, log_best_evals[i].avg_episode_reward))
-            # logger.info("Agent_{} gets best_eval_win rate: {:.2f}.".format(i, b_win_rate[i]))
-
-
-            if log_evals[i].avg_episode_reward > learner.best_reward: #or win_rate[i] > learner.best_win_rate:
+            if log_evals[i].avg_episode_reward > learner.best_reward or win_rate[i] > learner.best_win_rate:
                 learner.best_reward = log_evals[i].avg_episode_reward
                 learner.best_win_rate = win_rate[i]
                 learner.save_best_flag = True
@@ -167,52 +125,12 @@ class MultiEvoAgentRunner(BaseRunner):
             # writer.add_scalar('train_R_avg_{}'.format(i), logs[i].avg_reward, epoch)
             writer.add_scalar('train_R_eps_avg_{}'.format(i), logs[i].avg_episode_reward, epoch)
             writer.add_scalar('eval_R_eps_avg_{}'.format(i), log_evals[i].avg_episode_reward, epoch)
-            # writer.add_scalar('best_eval_R_eps_avg_{}'.format(i), log_best_evals[i].avg_episode_reward, epoch)
             # writer.add_scalar('eval_R_avg_{}'.format(i), log_evals[i].avg_reward, epoch)
-
-            # logging win rate
-            writer.add_scalar("train_win_rate_{}".format(i), t_win_rate[i], epoch)
             # logging win rate
             writer.add_scalar("eval_win_rate_{}".format(i), win_rate[i], epoch)
-            # logging win rate
-            # writer.add_scalar("best_eval_win_rate_{}".format(i), b_win_rate[i], epoch)
-
-            # eps num_episodes
-            writer.add_scalar("train_num_episodes", logs[i].num_episodes, epoch)
-            # eps num_episodes
-            writer.add_scalar("eval_num_episodes", log_evals[i].num_episodes, epoch)
-            # eps num_episodes
-            # writer.add_scalar("best_eval_num_episodes", log_best_evals[i].num_episodes, epoch)
-
-            # eps num_episodes
-            writer.add_scalar("train_num_steps", logs[i].num_steps, epoch)
-            # eps num_episodes
-            writer.add_scalar("eval_num_steps", log_evals[i].num_steps, epoch)
-            # eps num_episodes
-            # writer.add_scalar("best_eval_num_steps", log_best_evals[i].num_steps, epoch)
-
-
             # eps len
-            writer.add_scalar("train_episode_length", logs[i].avg_episode_len, epoch)
-            # eps len
-            writer.add_scalar("eval_episode_length", log_evals[i].avg_episode_len, epoch)
-            # eps len
-            # writer.add_scalar("best_eval_episode_length", log_best_evals[i].avg_episode_len, epoch)
+            writer.add_scalar("episode_length", log_evals[i].avg_episode_len, epoch)
 
-            # min dist
-            writer.add_scalar("train_min_dist", logs[i].min_dist, epoch)
-            writer.add_scalar("eval_min_dist", log_evals[i].min_dist, epoch)
-
-            # max dist
-            writer.add_scalar("train_max_dist", logs[i].max_dist, epoch)
-            writer.add_scalar("eval_max_dist", log_evals[i].max_dist, epoch)
-
-            
-            # policy loss
-            writer.add_scalar("policy_loss_{}".format(i), policy_losses[i], epoch)
-            # value loss
-            writer.add_scalar("value_loss_{}".format(i), value_losses[i], epoch)
-            
     
     def optimize(self, epoch):
         self.epoch = epoch
@@ -245,7 +163,7 @@ class MultiEvoAgentRunner(BaseRunner):
             c_rew.append(rew)
         return tuple(c_rew), infos
 
-    def sample_worker(self, pid, queue, min_batch_size, mean_action, render, randomstate, idx=None, eval=False):
+    def sample_worker(self, pid, queue, min_batch_size, mean_action, render, randomstate, idx=None):
         self.seed_worker(pid)
         design_params = {0: [], 1: []}
         
@@ -268,34 +186,31 @@ class MultiEvoAgentRunner(BaseRunner):
                     samplers[i] = DevSampler(self.cfg, self.dtype, 'cpu', self.env.agents[i])
                 else:
                     samplers[i] = Sampler(self.cfg, self.dtype, 'cpu', self.env.agents[i])
-                samplers[i].policy_net.load_state_dict(self.learners[i].policy_net.state_dict())
 
             # sample random opponent old policies before every rollout
-            if eval or self.agent_num<2 or self.epoch == 0: #not self.cfg.use_opponent_sample or mean_action 
+            if not self.cfg.use_opponent_sample or mean_action or self.epoch == 0:
                 ckpt = self.epoch
-                # if best:
-                #     ckpt = "best"
-                #     try:
-                #         # get opp/ego ckpt modeal
-                #         opp_cp_path = '%s/%s/%s.p' % (self.model_dir, "agent_"+str(0), ckpt)
-                #         with open(opp_cp_path, "rb") as f:
-                #             opp_model_cp = pickle.load(f)
-                #             samplers[0].load_ckpt(opp_model_cp)
+                try:
+                    # get opp/ego ckpt modeal
+                    opp_cp_path = '%s/%s/epoch_%04d.p' % (self.model_dir, "agent_"+str(0), ckpt)
+                    with open(opp_cp_path, "rb") as f:
+                        opp_model_cp = pickle.load(f)
+                        samplers[0].load_ckpt(opp_model_cp)
 
-                #         # get ego ckpt modeal
-                #         ego_cp_path = '%s/%s/%s.p' % (self.model_dir, "agent_"+str(1), ckpt)
-                #         with open(ego_cp_path, "rb") as f:
-                #             ego_model_cp = pickle.load(f)
-                #             samplers[1].load_ckpt(ego_model_cp)
-                #     except:
-                #         pass
+                    # get ego ckpt modeal
+                    ego_cp_path = '%s/%s/epoch_%04d.p' % (self.model_dir, "agent_"+str(1), ckpt)
+                    with open(ego_cp_path, "rb") as f:
+                        ego_model_cp = pickle.load(f)
+                        samplers[1].load_ckpt(ego_model_cp)
+                except:
+                    pass
             else:
                 assert idx is not None
                 """set sampling policy for opponent"""
                 start = math.floor(self.epoch * self.cfg.delta)
                 start = start if start > 1 else 1
                 end = self.epoch
-                ckpt = randomstate.randint(start, end+1) if start!=end else end
+                ckpt = randomstate.randint(start, end) if start!=end else end
 
                 # get opp ckpt modeal
                 opp_cp_path = '%s/%s/epoch_%04d.p' % (self.model_dir, "agent_"+str(1-idx), ckpt)
@@ -303,13 +218,13 @@ class MultiEvoAgentRunner(BaseRunner):
                     opp_model_cp = pickle.load(f)
                     samplers[1-idx].load_ckpt(opp_model_cp)
 
-                # # get ego ckpt modeal
-                # ego_cp_path = '%s/%s/epoch_%04d.p' % (self.model_dir, "agent_"+str(idx), self.epoch)
-                # with open(ego_cp_path, "rb") as f:
-                #     ego_model_cp = pickle.load(f)
-                #     samplers[idx].load_ckpt(ego_model_cp)
+                # get ego ckpt modeal
+                ego_cp_path = '%s/%s/epoch_%04d.p' % (self.model_dir, "agent_"+str(idx), self.epoch)
+                with open(ego_cp_path, "rb") as f:
+                    ego_model_cp = pickle.load(f)
+                    samplers[idx].load_ckpt(ego_model_cp)
 
-            states, info = self.env.reset(symmetric=eval or self.cfg.symmetric)
+            states, info = self.env.reset()
             # normalize states
             for i, sampler in samplers.items():
                 if sampler.running_state is not None:
@@ -317,7 +232,7 @@ class MultiEvoAgentRunner(BaseRunner):
                 ma_logger[i].start_episode(self.env)
             
             for t in range(10000):
-                state_var = mix_tensorfy(states, self.device)
+                state_var = mix_tensorfy(states)
                 use_mean_action = mean_action or torch.bernoulli(torch.tensor([1 - self.noise_rate])).item()
                 # select actions
                 actions = []
@@ -392,7 +307,7 @@ class MultiEvoAgentRunner(BaseRunner):
         else:
             return ma_memory, ma_logger, total_score, design_params
 
-    def sample(self, min_batch_size, mean_action=False, render=False, nthreads=None, eval=False):
+    def sample(self, min_batch_size, mean_action=False, render=False, nthreads=None):
         if nthreads is None:
             nthreads = self.num_threads
 
@@ -400,7 +315,7 @@ class MultiEvoAgentRunner(BaseRunner):
         for i, learner in self.learners.items():
             to_test(*learner.sample_modules)
 
-        if eval or self.agent_num<2:#(not self.cfg.use_opponent_sample) or mean_action:
+        if (not self.cfg.use_opponent_sample) or mean_action:
             with to_cpu(*reduce(add, (learner.sample_modules for i, learner in self.learners.items()))):
                 with torch.no_grad():
                     thread_batch_size = int(math.floor(min_batch_size / nthreads))
@@ -412,10 +327,10 @@ class MultiEvoAgentRunner(BaseRunner):
                     design_params = [None] * nthreads
 
                     for i in range(nthreads-1):
-                        worker_args = (i+1, queue, thread_batch_size, mean_action, render, np.random.RandomState(), None, eval)
+                        worker_args = (i+1, queue, thread_batch_size, mean_action, render, np.random.RandomState())
                         worker = multiprocessing.Process(target=self.sample_worker, args=worker_args)
                         worker.start()
-                    memories[0], loggers[0], total_scores[0], design_params[0] = self.sample_worker(0, None, thread_batch_size, mean_action, render, np.random.RandomState(), None, eval)
+                    memories[0], loggers[0], total_scores[0], design_params[0] = self.sample_worker(0, None, thread_batch_size, mean_action, render, np.random.RandomState())
 
                     for i in range(nthreads - 1):
                         pid, worker_memory, worker_logger, total_score, design_param = queue.get()
@@ -455,9 +370,6 @@ class MultiEvoAgentRunner(BaseRunner):
                     total_scores = list(zip(*total_scores))
                     total_scores = [sum(scores) for scores in total_scores]
                     win_rate = [total_scores[0]/total_scores[-1], total_scores[1]/total_scores[-1]]
-                    
-                    if self.agent_num > 1:
-                        self.logger.info("eval total_scores: {}, {}, {}".format(total_scores[0],total_scores[1],total_scores[2]))
                 
             for logger in ma_logger: logger.sample_time = time.time() - t_start
             return ma_buffer, ma_logger, win_rate
@@ -540,9 +452,6 @@ class MultiEvoAgentRunner(BaseRunner):
                     total_scores_1 = list(zip(*total_scores_1))
                     total_scores_1 = [sum(scores) for scores in total_scores_1]
                     win_rate = [total_scores_0[0]/total_scores_0[-1], total_scores_1[1]/total_scores_1[-1]]
-                    if self.agent_num > 1:
-                        self.logger.info("train total_scores_0: {}, {}, {}".format(total_scores_0[0],total_scores_0[1],total_scores_0[2]))
-                        self.logger.info("train total_scores_1: {}, {}, {}".format(total_scores_1[0],total_scores_1[1],total_scores_1[2]))
 
                     # extract corresponding agent data 
                     b = [ma_buffer_0[0], ma_buffer_1[1]]
@@ -564,13 +473,11 @@ class MultiEvoAgentRunner(BaseRunner):
         else:
             assert isinstance(ckpt, str)
             cp_path = '%s/%s/%s.p' % (ckpt_dir, "agent_"+str(idx), ckpt)
+        self.logger.info('loading agent_%s model from checkpoint: %s' % (str(idx), cp_path))
         model_cp = pickle.load(open(cp_path, "rb"))
 
         # load model
         self.learners[idx].load_ckpt(model_cp)
-        self.logger.info('loading agent_%s model from checkpoint: %s' % (str(idx), cp_path))
-        self.logger.info('best reward: %f' % (self.learners[idx].best_reward))
-        self.logger.info('epoch: %f' % (self.learners[idx].epoch))
 
     def save_checkpoint(self, epoch):
         def save(cp_path, idx):
@@ -597,7 +504,6 @@ class MultiEvoAgentRunner(BaseRunner):
                 save('%s/%s/best.p' % (self.model_dir, "agent_"+str(i)), i)
     
     def display(self, num_episode=3, mean_action=True):
-        t_start = time.time()
         # total score record: [agent_0_win_times, agent_1_win_times, games_num]
         total_score = [0 for _ in self.learners]
         total_score.append(0)
@@ -605,14 +511,14 @@ class MultiEvoAgentRunner(BaseRunner):
         
         for _ in range(num_episode):
             episode_reward = [0 for _ in self.learners]
-            states, info = self.env.reset(symmetric=self.cfg.symmetric)
+            states, info = self.env.reset()
             # normalize states
             for i, learner in self.learners.items():
                 if learner.running_state is not None:
                     states[i] = learner.running_state(states[i])
-            imgs = []
+
             for t in range(10000):
-                state_var = mix_tensorfy(states, self.device)
+                state_var = mix_tensorfy(states)
                 use_mean_action = mean_action or torch.bernoulli(torch.tensor([1 - self.noise_rate])).item()
                 # select actions
                 with torch.no_grad():
@@ -625,15 +531,6 @@ class MultiEvoAgentRunner(BaseRunner):
                         else:
                             actions.append(learner.policy_net.select_action(state_var[i], use_mean_action).squeeze().numpy().astype(np.float64))
                 next_states, env_rewards, terminateds, truncated, infos = self.env.step(actions)
-                
-                # 使用 MuJoCo 的渲染方法
-                frame = self.env.env_scene.mujoco_renderer.render(render_mode='rgb_array')
-                # frame = np.flipud(frame)  # MuJoCo 的渲染结果可能需要翻转
-
-                #保存图片
-                img = Image.fromarray(frame)
-                # img.save('test.jpg')
-                imgs.append(img)
 
                 # normalize states
                 for i, learner in self.learners.items():
@@ -668,44 +565,14 @@ class MultiEvoAgentRunner(BaseRunner):
             
             total_reward.append(episode_reward)
 
-            if _ == 0:
-                imgs[0].save('test.gif', save_all=True, append_images=imgs[1:], duration=30, loop=0)
-
         def average(list):
             total = sum(list)
             length = len(list)
             return total / length
 
-        agent0_reward = average(list(zip(*total_reward))[0])
-        agent0_win_rate = total_score[0]/total_score[-1]
+        self.logger.info("Agent_0 gets averaged episode reward: {:.2f}".format(average(list(zip(*total_reward))[0])))
+        self.logger.info("Agent_1 gets averaged episode reward: {:.2f}".format(average(list(zip(*total_reward))[1])))
 
+        self.logger.info("Agent_0 gets win rate over {} rounds: {:.2f}".format(num_episode, total_score[0]/total_score[-1]))
+        self.logger.info("Agent_1 gets win rate over {} rounds: {:.2f}".format(num_episode, total_score[1]/total_score[-1]))
         
-        self.logger.info("Agent_0 gets averaged episode reward: {:.2f}".format(agent0_reward))
-        self.logger.info("Agent_0 gets win rate over {} rounds: {:.2f}".format(num_episode, agent0_win_rate))
-
-        if self.agent_num > 1:
-            agent1_reward = average(list(zip(*total_reward))[1])
-            agent1_win_rate = total_score[1]/total_score[-1]
-            self.logger.info("Agent_1 gets averaged episode reward: {:.2f}".format(agent1_reward))
-            self.logger.info("Agent_1 gets win rate over {} rounds: {:.2f}".format(num_episode, agent1_win_rate))
-        else:
-            agent1_reward = 0
-            agent1_win_rate = 0
-
-        # #我需要把上述4行的结果保存到一个test.csv文件中，这个文件不需要标题行，第一行就是数据，
-        # # for ckpt in range(1, 101):
-        # #     command = f"python display.py --cfg config/robo-sumo-sgdevant-devant-v0.yaml --ckpt {ckpt} --ckpt_dir tmp/models"
-        # #     os.system(command)
-        # #因为我是通过这个方式来进行display测试的，所以需要你接着这个test.csv文件继续添加新的数据行
-        # # 这个文件的第一列是epoch（self.learners[0].epoch），第二列是agent_0的平均reward，第三列是agent_0的胜率，第四列是agent_1的平均reward，第五列是agent_1的胜率
-        # import csv
-
-        # # Append results to test.csv
-        # with open('test.csv', mode='a', newline='') as file:
-        #     writer = csv.writer(file)
-        #     writer.writerow([self.learners[0].epoch+1, agent0_reward, agent0_win_rate, agent1_reward, agent1_win_rate])
-
-
-        
-        self.logger.info('Total time: {:10.2f} '.format((time.time() - self.t_start)))
-                
