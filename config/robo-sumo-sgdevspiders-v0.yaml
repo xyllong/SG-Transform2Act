@@ -1,4 +1,4 @@
-env_name: robo-sumo-sgdevspiders-v0
+env_name: robo-sumo-sgdevspider-sgdevspider-v0
 runner_type: multi-evo-agent-runner
 
 agent_specs:

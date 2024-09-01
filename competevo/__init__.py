@@ -115,7 +115,7 @@ register(
 )
 
 register(
-    id='robo-sumo-sgdevants-v0',
+    id='robo-sumo-sgdevant-sgdevant-v0',
     entry_point='competevo.evo_envs:RoboSumoDevEnv',
     disable_env_checker=True,
     kwargs={'agent_names': ['sg_dev_ant_fighter', 'sg_dev_ant_fighter'],
@@ -149,7 +149,7 @@ register(
 )
 
 register(
-    id='robo-sumo-sgdevspiders-v0',
+    id='robo-sumo-sgdevspider-sgdevspider-v0',
     entry_point='competevo.evo_envs:RoboSumoDevEnv',
     disable_env_checker=True,
     kwargs={'agent_names': ['sg_dev_spider_fighter', 'sg_dev_spider_fighter'],
