@@ -56,6 +56,10 @@ class MultiDevAgentEnv(MujocoEnv):
             os.path.join(os.path.dirname(__file__), "assets", "dev_spider_body.xml"),
             DevSpiderFighter
         ),
+        'sg_dev_spider_fighter':(
+            os.path.join(os.path.dirname(__file__), "assets", "sg_dev_spider_body.xml"),
+            DevSpiderFighter
+        ),
     }
     WORLD_XML = os.path.join(os.path.dirname(__file__), "assets", "world_body.xml")
     GOAL_REWARD = 1000
