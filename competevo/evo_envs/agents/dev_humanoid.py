@@ -37,7 +37,7 @@ class DevHumanoid(Agent):
         self.robot = Robot(cfg.robot_cfg, xml=xml_path)
 
         self.stage = "attribute_transform"
-        self.scale_vector = np.random.uniform(low=-1., high=1., size=20)
+        self.scale_vector = np.random.uniform(low=-1., high=1., size=22)
 
     @property
     def flag(self):
@@ -83,200 +83,213 @@ class DevHumanoid(Agent):
             cur_name = body.get('name')
 
             # 1
-            if cur_name == "1":
+            if cur_name == "lwaist":
                 geom = body.find('geom') #1
                 if geom is not None:
                     p = geom.get("fromto")
                     p = multiply_str(p, a[0])
                     geom.set("fromto", p)
 
-            if cur_name == "11":
-                p = body.get("pos")
-                p = multiply_str(p, a[0])
-                body.set("pos", p)
+                    p = geom.get("size")
+                    p = multiply_str(p, a[1])
+                    geom.set("size", p)
 
-                geom = body.find('geom') #11
-                p = geom.get("size")
-                p = multiply_str(p, a[1])
-                geom.set("size", p)
-
+            if cur_name == "pelvis":
+                geom = body.find('geom') #1
                 if geom is not None:
                     p = geom.get("fromto")
                     p = multiply_str(p, a[2])
                     geom.set("fromto", p)
 
-            if cur_name == "111":
-                p = body.get("pos")
-                p = multiply_str(p, a[2])
-                body.set("pos", p)
+                    p = geom.get("size")
+                    p = multiply_str(p, a[3])
+                    geom.set("size", p)
 
-                geom = body.find('geom') #111
-                p = geom.get("size")
-                p = multiply_str(p, a[3])
-                geom.set("size", p)
-
+            #right_leg
+            if cur_name == "right_thigh":
+                geom = body.find('geom') 
                 if geom is not None:
                     p = geom.get("fromto")
                     p = multiply_str(p, a[4])
                     geom.set("fromto", p)
 
-            # 2
-            if cur_name == "2":
-                geom = body.find('geom') #2
-                if geom is not None:
-                    p = geom.get("fromto")
+                    p = geom.get("size")
                     p = multiply_str(p, a[5])
-                    geom.set("fromto", p)
+                    geom.set("size", p)
 
-            if cur_name == "12":
+            if cur_name == "right_shin":
                 p = body.get("pos")
-                p = multiply_str(p, a[5])
+                p = multiply_str(p, a[4])
                 body.set("pos", p)
 
-                geom = body.find('geom') #12
-                p = geom.get("size")
-                p = multiply_str(p, a[6])
-                geom.set("size", p)
-
+                geom = body.find('geom') 
                 if geom is not None:
                     p = geom.get("fromto")
-                    p = multiply_str(p, a[7])
+                    p = multiply_str(p, a[6])
                     geom.set("fromto", p)
 
-            if cur_name == "112":
+                    p = geom.get("size")
+                    p = multiply_str(p, a[7])
+                    geom.set("size", p)
+
+            if cur_name == "right_foot":
                 p = body.get("pos")
-                p = multiply_str(p, a[7])
+                p = multiply_str(p, a[6])
                 body.set("pos", p)
 
-                geom = body.find('geom') #112
-                p = geom.get("size")
-                p = multiply_str(p, a[8])
-                geom.set("size", p)
+                geom = body.find('geom') 
+                if geom is not None:
+                    p = geom.get("size")
+                    p = multiply_str(p, a[8])
+                    geom.set("size", p)
 
+            #left_leg
+            if cur_name == "left_thigh":
+                geom = body.find('geom') 
                 if geom is not None:
                     p = geom.get("fromto")
                     p = multiply_str(p, a[9])
                     geom.set("fromto", p)
 
-            # 3
-            if cur_name == "3":
-                geom = body.find('geom') #3
-                if geom is not None:
-                    p = geom.get("fromto")
+                    p = geom.get("size")
                     p = multiply_str(p, a[10])
-                    geom.set("fromto", p)
+                    geom.set("size", p)
 
-            if cur_name == "13":
+            if cur_name == "left_shin":
                 p = body.get("pos")
-                p = multiply_str(p, a[10])
+                p = multiply_str(p, a[9])
                 body.set("pos", p)
 
-                geom = body.find('geom') #13
-                p = geom.get("size")
-                p = multiply_str(p, a[11])
-                geom.set("size", p)
-
+                geom = body.find('geom') 
                 if geom is not None:
                     p = geom.get("fromto")
-                    p = multiply_str(p, a[12])
+                    p = multiply_str(p, a[11])
                     geom.set("fromto", p)
 
-            if cur_name == "113":
+                    p = geom.get("size")
+                    p = multiply_str(p, a[12])
+                    geom.set("size", p)
+
+            if cur_name == "left_foot":
                 p = body.get("pos")
-                p = multiply_str(p, a[12])
+                p = multiply_str(p, a[11])
                 body.set("pos", p)
 
-                geom = body.find('geom') #113
-                p = geom.get("size")
-                p = multiply_str(p, a[13])
-                geom.set("size", p)
+                geom = body.find('geom') 
+                if geom is not None:
+                    p = geom.get("size")
+                    p = multiply_str(p, a[13])
+                    geom.set("size", p)
 
+            #right_arm
+            if cur_name == "right_upper_arm":
+                geom = body.find('geom') 
                 if geom is not None:
                     p = geom.get("fromto")
                     p = multiply_str(p, a[14])
                     geom.set("fromto", p)
 
-            # 4
-            if cur_name == "4":
-                geom = body.find('geom') #4
-                if geom is not None:
-                    p = geom.get("fromto")
+                    p = geom.get("size")
                     p = multiply_str(p, a[15])
-                    geom.set("fromto", p)
+                    geom.set("size", p)
 
-            if cur_name == "14":
+            if cur_name == "right_lower_arm":
                 p = body.get("pos")
-                p = multiply_str(p, a[15])
+                p = multiply_str(p, a[14])
                 body.set("pos", p)
 
-                geom = body.find('geom') #14
-                p = geom.get("size")
-                p = multiply_str(p, a[16])
-                geom.set("size", p)
-
+                geom = body.find('geom') 
                 if geom is not None:
                     p = geom.get("fromto")
+                    p = multiply_str(p, a[16])
+                    geom.set("fromto", p)
+
+                    p = geom.get("size")
                     p = multiply_str(p, a[17])
-                    geom.set("fromto", p)
+                    geom.set("size", p)
 
-            if cur_name == "114":
-                p = body.get("pos")
-                p = multiply_str(p, a[17])
-                body.set("pos", p)
-
-                geom = body.find('geom') #114
-                p = geom.get("size")
-                p = multiply_str(p, a[18])
-                geom.set("size", p)
-
+            #left_arm
+            if cur_name == "left_upper_arm":
+                geom = body.find('geom') 
                 if geom is not None:
                     p = geom.get("fromto")
-                    p = multiply_str(p, a[19])
+                    p = multiply_str(p, a[18])
                     geom.set("fromto", p)
+
+                    p = geom.get("size")
+                    p = multiply_str(p, a[19])
+                    geom.set("size", p)
+
+            if cur_name == "left_lower_arm":
+                p = body.get("pos")
+                p = multiply_str(p, a[18])
+                body.set("pos", p)
+
+                geom = body.find('geom') 
+                if geom is not None:
+                    p = geom.get("fromto")
+                    p = multiply_str(p, a[20])
+                    geom.set("fromto", p)
+
+                    p = geom.get("size")
+                    p = multiply_str(p, a[21])
+                    geom.set("size", p)
+
 
         agent_actuator = self.tree.find('actuator')
         for motor in agent_actuator.iter("motor"):
-            cur_name = motor.get("name").split('_')[0]
+            cur_name = motor.get("name")
 
-            if cur_name == "11":
+            if cur_name == "abdomen_y" or cur_name == "abdomen_z":
                 p = motor.get("gear")
                 p = multiply_str(p, b[1])
                 motor.set("gear", p)
 
-            if cur_name == "111":
+            if cur_name == "abdomen_x":
                 p = motor.get("gear")
                 p = multiply_str(p, b[3])
                 motor.set("gear", p)
 
-            if cur_name == "12":
+            if cur_name == "right_hip_x" or cur_name == "right_hip_z" or cur_name == "right_hip_y":
                 p = motor.get("gear")
-                p = multiply_str(p, b[6])
+                p = multiply_str(p, b[5])
                 motor.set("gear", p)
 
-            if cur_name == "112":
+            if cur_name == "right_knee":
                 p = motor.get("gear")
-                p = multiply_str(p, b[8])
+                p = multiply_str(p, b[7])
                 motor.set("gear", p)
 
-            if cur_name == "13":
+            if cur_name == "left_hip_x" or cur_name == "left_hip_z" or cur_name == "left_hip_y":
                 p = motor.get("gear")
-                p = multiply_str(p, b[11])
+                p = multiply_str(p, b[10])
                 motor.set("gear", p)
 
-            if cur_name == "113":
+            if cur_name == "left_knee":
                 p = motor.get("gear")
-                p = multiply_str(p, b[13])
+                p = multiply_str(p, b[12])
                 motor.set("gear", p)
 
-            if cur_name == "14":
+            if cur_name == "right_shoulder1" or cur_name == "right_shoulder2":
                 p = motor.get("gear")
-                p = multiply_str(p, b[16])
+                p = multiply_str(p, b[15])
                 motor.set("gear", p)
 
-            if cur_name == "114":
+            if cur_name == "right_elbow":
                 p = motor.get("gear")
-                p = multiply_str(p, b[18])
+                p = multiply_str(p, b[17])
                 motor.set("gear", p)
+
+            if cur_name == "left_shoulder1" or cur_name == "left_shoulder2":
+                p = motor.get("gear")
+                p = multiply_str(p, b[19])
+                motor.set("gear", p)
+
+            if cur_name == "left_elbow":
+                p = motor.get("gear")
+                p = multiply_str(p, b[21])
+                motor.set("gear", p)
+
 
         # print(etree.tostring(self.tree, pretty_print=True).decode('utf-8'))
         self.cur_xml_str = etree.tostring(self.tree, pretty_print=True).decode('utf-8')
@@ -540,4 +553,4 @@ class DevHumanoid(Agent):
         self.set_goal(goal)
 
         self.stage = 'attribute_transform'
-        self.scale_vector = np.random.uniform(low=-1., high=1., size=20)
+        self.scale_vector = np.random.uniform(low=-1., high=1., size=22)
