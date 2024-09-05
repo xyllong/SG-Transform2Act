@@ -345,6 +345,8 @@ class DevHumanoid(Agent):
         # if self.team == 'walker':
         #     reward_info['reward_goal_dist'] = reward_goal
         reward_info['reward_dense'] = reward
+        
+        reward_info['dist'] = self.dist_after
 
         # done = not agent_standing
         terminated = bool(qpos[2] < 1. or qpos[2] > 2.)

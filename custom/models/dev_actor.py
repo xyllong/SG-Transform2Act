@@ -45,8 +45,8 @@ class DevPolicy(nn.Module):
             cur_dim = self.sim_obs_dim
 
 
-        if 'egnn' in cfg.cfg and cfg.cfg['egnn'] and ((self.agent.scope == 'agent0' and 'sg'in cfg.cfg['env_name'].split('-')[-3]) or (self.agent.scope == 'agent1' and 'sg'in cfg.cfg['env_name'].split('-')[-2])):
-            self.frame_gnn = SGNN(state_dim = cur_dim//len(self.agent.body_ids), attr_fixed_dim = 0, attr_design_dim = 0, msg_dim = 32, p_step = 3, z_num = 7)
+        if 'egnn' in cfg.cfg and cfg.cfg['egnn'] and ((self.agent.scope == 'agent0' and 'sg'in cfg.cfg['env_name'].split('-')[-3]) or (self.agent.scope == 'agent1' and 'sg'in cfg.cfg['env_name'].split('-')[-2]) or ('turn'in cfg.cfg['env_name'].split('-')[-5])):
+            self.frame_gnn = SGNN(state_dim = cur_dim//len(self.agent.body_ids), attr_fixed_dim = 0, attr_design_dim = 0, msg_dim = 32, p_step = 3, z_num = 7- ('turn'in cfg.cfg['env_name'].split('-')[-5]))
         else:
             self.frame_gnn = None
 
