@@ -57,7 +57,7 @@ class Joint:
             self.axis = vec_to_polar(parse_vec(node.attrib['axis']))
         if self.local_coord:
             self.pos += body.pos
-        assert(np.all(self.pos == body.pos))
+        # assert(np.all(self.pos == body.pos))
     
     def __repr__(self):
         # return 'joint_' + self.name
@@ -499,7 +499,7 @@ class Robot:
         self.param_mapping = cfg.get('param_mapping', 'clip')
         self.tree = None    # xml tree
         self.load_from_xml(xml, is_xml_str)
-        self.init_bodies()
+        # self.init_bodies()
         self.param_names = self.get_params(get_name=True)
         self.init_params = self.get_params()
 

@@ -60,6 +60,11 @@ class MultiDevAgentEnv(MujocoEnv):
             os.path.join(os.path.dirname(__file__), "assets", "sg_dev_spider_body.xml"),
             DevSpiderFighter
         ),
+        'dev_humanoid': (
+            os.path.join(os.path.dirname(__file__), "assets", "dev_humanoid_body.xml"),
+            # os.path.join(os.path.dirname(__file__), "assets", "evo_ant_body_base.xml"),
+            DevHumanoid
+        ),
     }
     WORLD_XML = os.path.join(os.path.dirname(__file__), "assets", "world_body.xml")
     GOAL_REWARD = 1000
@@ -147,15 +152,15 @@ class MultiDevAgentEnv(MujocoEnv):
         self._set_action_space()
         self.metadata = self.env_scene.metadata
         
-        gid = self.env_scene.geom_names.index('rightgoal')
-        self.RIGHT_GOAL = self.env_scene.model.geom_pos[gid][0]
-        gid = self.env_scene.geom_names.index('leftgoal')
-        self.LEFT_GOAL = self.env_scene.model.geom_pos[gid][0]
-        for i in range(self.n_agents):
-            if self.agents[i].get_qpos()[0] > 0:
-                self.agents[i].set_goal(self.LEFT_GOAL)
-            else:
-                self.agents[i].set_goal(self.RIGHT_GOAL)
+        # gid = self.env_scene.geom_names.index('rightgoal')
+        # self.RIGHT_GOAL = self.env_scene.model.geom_pos[gid][0]
+        # gid = self.env_scene.geom_names.index('leftgoal')
+        # self.LEFT_GOAL = self.env_scene.model.geom_pos[gid][0]
+        # for i in range(self.n_agents):
+        #     if self.agents[i].get_qpos()[0] > 0:
+        #         self.agents[i].set_goal(self.LEFT_GOAL)
+        #     else:
+        #         self.agents[i].set_goal(self.RIGHT_GOAL)
 
     def reload_init_mujoco_env(self, **kwargs):
         if hasattr(self, "env_scene"):
@@ -169,15 +174,15 @@ class MultiDevAgentEnv(MujocoEnv):
         self._set_action_space()
         self.metadata = self.env_scene.metadata
         
-        gid = self.env_scene.geom_names.index('rightgoal')
-        self.RIGHT_GOAL = self.env_scene.model.geom_pos[gid][0]
-        gid = self.env_scene.geom_names.index('leftgoal')
-        self.LEFT_GOAL = self.env_scene.model.geom_pos[gid][0]
-        for i in range(self.n_agents):
-            if self.agents[i].get_qpos()[0] > 0:
-                self.agents[i].set_goal(self.LEFT_GOAL)
-            else:
-                self.agents[i].set_goal(self.RIGHT_GOAL)
+        # gid = self.env_scene.geom_names.index('rightgoal')
+        # self.RIGHT_GOAL = self.env_scene.model.geom_pos[gid][0]
+        # gid = self.env_scene.geom_names.index('leftgoal')
+        # self.LEFT_GOAL = self.env_scene.model.geom_pos[gid][0]
+        # for i in range(self.n_agents):
+        #     if self.agents[i].get_qpos()[0] > 0:
+        #         self.agents[i].set_goal(self.LEFT_GOAL)
+        #     else:
+        #         self.agents[i].set_goal(self.RIGHT_GOAL)
 
     def load_tmp_mujoco_env(
             self, 
@@ -207,15 +212,15 @@ class MultiDevAgentEnv(MujocoEnv):
         self._set_action_space()
         self.metadata = self.env_scene.metadata
         
-        gid = self.env_scene.geom_names.index('rightgoal')
-        self.RIGHT_GOAL = self.env_scene.model.geom_pos[gid][0]
-        gid = self.env_scene.geom_names.index('leftgoal')
-        self.LEFT_GOAL = self.env_scene.model.geom_pos[gid][0]
-        for i in range(self.n_agents):
-            if self.agents[i].get_qpos()[0] > 0:
-                self.agents[i].set_goal(self.LEFT_GOAL)
-            else:
-                self.agents[i].set_goal(self.RIGHT_GOAL)
+        # gid = self.env_scene.geom_names.index('rightgoal')
+        # self.RIGHT_GOAL = self.env_scene.model.geom_pos[gid][0]
+        # gid = self.env_scene.geom_names.index('leftgoal')
+        # self.LEFT_GOAL = self.env_scene.model.geom_pos[gid][0]
+        # for i in range(self.n_agents):
+        #     if self.agents[i].get_qpos()[0] > 0:
+        #         self.agents[i].set_goal(self.LEFT_GOAL)
+        #     else:
+        #         self.agents[i].set_goal(self.RIGHT_GOAL)
 
     def _past_limit(self):
         if self._max_episode_steps <= self._elapsed_steps:
@@ -316,7 +321,7 @@ class MultiDevAgentEnv(MujocoEnv):
             try:
                 self.load_tmp_mujoco_env(self.world_xml_path, cur_xml_strs, \
                                      self.agent_scopes, self.ini_pos, self.ini_euler, self.rgb, **self.kwargs)
-                print(self._env_xml_str)
+                # print(self._env_xml_str)
             except:
                 print("Warning: Errors occur when loading xml files.")
                 terminateds = tuple([True, True])
