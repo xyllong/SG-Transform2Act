@@ -331,7 +331,7 @@ class DevHumanoid(Agent):
         contact_cost = min(contact_cost, 10)
         qpos = self.get_qpos()
         survive = 5.0
-        reward = forward_reward - ctrl_cost - contact_cost + survive# + dist_reward
+        reward = forward_reward - ctrl_cost - contact_cost + survive + dist_reward
 
         # reward_goal = - np.abs(qpos[0].item() - self.GOAL)
         # reward += reward_goal
