@@ -452,11 +452,11 @@ class MultiEvoAgentRunner(BaseRunner):
                     ma_logger = self.logger_cls.merge(loggers, **self.logger_kwargs)
 
                     # win rate
-                    total_scores = list(zip(*total_scores))
-                    total_scores = [sum(scores) for scores in total_scores]
-                    win_rate = [total_scores[0]/total_scores[-1], total_scores[1]/total_scores[-1]]
-                    
                     if self.agent_num > 1:
+                        total_scores = list(zip(*total_scores))
+                        total_scores = [sum(scores) for scores in total_scores]
+                        win_rate = [total_scores[0]/total_scores[-1], total_scores[1]/total_scores[-1]]
+                    
                         self.logger.info("eval total_scores: {}, {}, {}".format(total_scores[0],total_scores[1],total_scores[2]))
                 
             for logger in ma_logger: logger.sample_time = time.time() - t_start

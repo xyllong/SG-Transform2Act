@@ -132,6 +132,7 @@ class RoboSumoEvoEnv(MultiEvoAgentEnv):
 
 
     def _reset(self, version=None, **kwargs):
+        self.cur_t = 0
         self._elapsed_steps = 0
         self.agent_contacts = False
         # self.RADIUS = self.START_RADIUS
