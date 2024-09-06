@@ -99,8 +99,10 @@ robot:
   body_params:
     offset:
       type: 'xy'
-      lb: [-0.5, -0.5]
-      ub: [0.5, 0.5]
+      # lb: [-0.5, -0.5]
+      # ub: [0.5, 0.5]
+      lb: [-0.4, -0.4]
+      ub: [0.4, 0.4]
 
   joint_params: {}
 
@@ -108,9 +110,9 @@ robot:
     size:
       lb: 0.03
       ub: 0.10
-    ext_start:
-      lb: 0.0
-      ub: 0.2
+    # ext_start:
+    #   lb: 0.0
+    #   ub: 0.2
 
   actuator_params:
     gear:

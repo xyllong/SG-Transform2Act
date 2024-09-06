@@ -53,14 +53,21 @@ class Transform2ActValue(nn.Module):
         else:
             obs, edges, use_transform_action, num_nodes = zip(*x)
         obs = torch.cat(obs)
-        use_transform_action = np.concatenate(use_transform_action)
-        num_nodes = np.concatenate(num_nodes)
+        if isinstance(num_nodes, np.ndarray):
+            num_nodes = torch.tensor(num_nodes, device=obs.device)
+            use_transform_action = torch.tensor(use_transform_action, device=obs.device)
+            
+        use_transform_action = torch.cat(use_transform_action)
+        num_nodes = torch.cat(num_nodes)
         edges_new = torch.cat(edges, dim=1)
         if len(x) > 1:
             repeat_num = [x.shape[1] for x in edges[1:]]
-            num_nodes_cum = np.cumsum(num_nodes)
-            e_offset = np.repeat(num_nodes_cum[:-1], repeat_num)
-            e_offset = torch.tensor(e_offset, device=obs.device)
+            # num_nodes_cum = np.cumsum(num_nodes)
+            num_nodes_cum = torch.cumsum(num_nodes,dim=0)
+            # e_offset = np.repeat(num_nodes_cum[:-1], repeat_num)
+            # e_offset = torch.tensor(e_offset, device=obs.device)
+            repeat_num_tensor = torch.tensor(repeat_num, dtype=torch.long,device=obs.device)
+            e_offset = torch.repeat_interleave(num_nodes_cum[:-1], repeat_num_tensor)
             edges_new[:, -e_offset.shape[0]:] += e_offset
         else:
             num_nodes_cum = None
