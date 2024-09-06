@@ -12,3 +12,4 @@ from .dev_spider import DevSpider
 from .dev_spider_fighter import DevSpiderFighter
 
 from .dev_humanoid import DevHumanoid
+from .humanoid import Humanoid

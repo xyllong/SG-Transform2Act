@@ -1,10 +1,11 @@
-env_name: turn-to-goal-devhuman-v0
+env_name: turn-to-goal-human-v0
 runner_type: multi-evo-agent-runner
 
 agent_specs:
   batch_design: true
 
 egnn: False
+z_num: 5
 
 # training parameters
 gamma: 0.995
@@ -65,7 +66,7 @@ clip_epsilon: 0.2
 min_batch_size: 50000
 mini_batch_size: 2048
 num_optim_epoch: 10
-max_epoch_num: 1000
+max_epoch_num: 2000
 seed: 42
 save_model_interval: 1
 

@@ -322,12 +322,12 @@ class EvoAntTurn(Ant):
         root_pos = qpos[:2]
         root_pos = np.append(root_pos, 0)
 
-        other_pos = self.get_other_qpos()[:2]
-        if other_pos.shape == (0,):
+        # other_pos = self.get_other_qpos()[:2]
+        # if other_pos.shape == (0,):
             # other_pos = np.zeros(2) # x and y
             # other_pos = np.random.uniform(-5, 5, 2)
-            other_pos = self.GOAL#np.array([self.GOAL[0],self.GOAL[1],0])
-            other_pos = other_pos - root_pos
+        other_pos = self.GOAL#np.array([self.GOAL[0],self.GOAL[1],0])
+        other_pos = other_pos - root_pos
 
         # self.env.data.geom_xpos[1] = np.array([0,0,1])
         

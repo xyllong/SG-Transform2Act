@@ -1,10 +1,10 @@
-env_name: turn-to-goal-devhuman-v0
+env_name: turn-to-goal-sghuman-v0
 runner_type: multi-evo-agent-runner
 
 agent_specs:
   batch_design: true
 
-egnn: False
+egnn: True
 z_num: 5
 
 # training parameters
