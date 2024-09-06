@@ -75,7 +75,7 @@ class DevPolicy(nn.Module):
         _, _, edges, num_nodes, _ = zip(*x)
         obs= obs.reshape(obs.shape[0]*num_nodes[0], -1)
         # use_transform_action = np.concatenate(use_transform_action)
-        if torch.is_tensor(num_nodes) == False:
+        if not (torch.is_tensor(num_nodes) or (isinstance(num_nodes, tuple) and torch.is_tensor(num_nodes[0]))):
             num_nodes = torch.tensor(num_nodes, device=obs.device)
         # num_nodes = np.concatenate(num_nodes)
         num_nodes = torch.cat(num_nodes)

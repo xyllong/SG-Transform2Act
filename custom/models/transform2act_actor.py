@@ -124,11 +124,11 @@ class Transform2ActPolicy(Policy):
     def batch_data(self, x):
         obs, edges, use_transform_action, num_nodes, body_ind = zip(*x)
         obs = torch.cat(obs)
-        if torch.is_tensor(num_nodes) == False:
+        if not (torch.is_tensor(num_nodes) or (isinstance(num_nodes, tuple) and torch.is_tensor(num_nodes[0]))):
             num_nodes = torch.tensor(num_nodes, device=obs.device)
-        if torch.is_tensor(use_transform_action) == False:
+        if not (torch.is_tensor(use_transform_action) or (isinstance(use_transform_action, tuple) and torch.is_tensor(use_transform_action[0]))):
             use_transform_action = torch.tensor(use_transform_action, device=obs.device)
-        if torch.is_tensor(body_ind) == False:
+        if not (torch.is_tensor(body_ind) or (isinstance(body_ind, tuple) and torch.is_tensor(body_ind[0]))):
             body_ind = torch.tensor(body_ind, device=obs.device)
         use_transform_action = torch.cat(use_transform_action)
         num_nodes = torch.cat(num_nodes)
