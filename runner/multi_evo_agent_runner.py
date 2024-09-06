@@ -700,9 +700,9 @@ class MultiEvoAgentRunner(BaseRunner):
         # import csv
 
         # Append results to test.csv
-        with open('test.csv', mode='a', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow([self.learners[0].epoch+1, agent0_reward, agent0_win_rate, agent1_reward, agent1_win_rate])
+        # with open('test.csv', mode='a', newline='') as file:
+        #     writer = csv.writer(file)
+        #     writer.writerow([self.learners[0].epoch+1, agent0_reward, agent0_win_rate, agent1_reward, agent1_win_rate])
 
 
         
