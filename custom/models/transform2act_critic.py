@@ -53,9 +53,9 @@ class Transform2ActValue(nn.Module):
         else:
             obs, edges, use_transform_action, num_nodes = zip(*x)
         obs = torch.cat(obs)
-        if isinstance(num_nodes, np.ndarray):
+        if torch.is_tensor(num_nodes) == False:
             num_nodes = torch.tensor(num_nodes, device=obs.device)
-        if isinstance(use_transform_action, np.ndarray):
+        if torch.is_tensor(use_transform_action) == False:
             use_transform_action = torch.tensor(use_transform_action, device=obs.device)
             
         use_transform_action = torch.cat(use_transform_action)

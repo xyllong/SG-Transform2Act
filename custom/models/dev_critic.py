@@ -49,6 +49,8 @@ class DevValue(nn.Module):
         _, _, edges, num_nodes, _ = zip(*x)
         obs= obs.reshape(obs.shape[0]*num_nodes[0], -1)
         # use_transform_action = np.concatenate(use_transform_action)
+        if torch.is_tensor(num_nodes) == False:
+            num_nodes = torch.tensor(num_nodes, device=obs.device)
         num_nodes = torch.cat(num_nodes)
         edges_new = torch.cat(edges, dim=1)
         num_nodes_cum = torch.cumsum(num_nodes,dim=0)
