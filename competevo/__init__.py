@@ -20,9 +20,9 @@ register(
 
 register(
     id='robo-sumo-evoants-v0',
-    entry_point='competevo.evo_envs:MultiEvoAgentEnv',
+    entry_point='competevo.evo_envs:RoboSumoEvoEnv',
     disable_env_checker=True,
-    kwargs={'agent_names': ['dev_ant_fighter', 'dev_ant_fighter'],
+    kwargs={'agent_names': ['evo_ant_fighter', 'evo_ant_fighter'],
             'world_xml_path': "./competevo/evo_envs/assets/world_body_arena.xml",
             'init_pos': [(-1, 0, 1.5), (1, 0, 1.5)],
             'ini_euler': [(0, 0, 0), (0, 0, 180)],

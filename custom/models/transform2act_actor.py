@@ -31,9 +31,11 @@ class Transform2ActPolicy(Policy):
         self.attr_action_dim = agent.attr_design_dim
         self.action_dim = self.control_action_dim + self.attr_action_dim + 1
         self.skel_uniform_prob = cfg.get('skel_uniform_prob', 0.0)
+        
+        z_num = cfg.get('z_num', 6)
 
         if 'egnn' in cfg and cfg['egnn']:
-            self.frame_gnn = SGNN(state_dim = self.sim_obs_dim, attr_fixed_dim = self.attr_fixed_dim, attr_design_dim = self.attr_design_dim, msg_dim = 32)
+            self.frame_gnn = SGNN(state_dim = self.sim_obs_dim, attr_fixed_dim = self.attr_fixed_dim, attr_design_dim = self.attr_design_dim, msg_dim = 32, p_step=3, z_num=z_num)
         else:
             self.frame_gnn = None
 

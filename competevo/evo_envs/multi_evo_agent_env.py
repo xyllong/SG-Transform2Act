@@ -21,6 +21,12 @@ class MultiEvoAgentEnv(MujocoEnv):
             os.path.join(os.path.dirname(__file__), "assets", "evo_ant_body_base.xml"),
             EvoAnt
         ),
+        'evo_ant_fighter': (
+            # os.path.join(os.path.dirname(__file__), "assets", "evo_ant_body_base2.xml"),
+            # os.path.join(os.path.dirname(__file__), "assets", "evo_ant_body_base1.xml"), # 
+            os.path.join(os.path.dirname(__file__), "assets", "evo_ant_body_base_fighter.xml"),
+            EvoAntFighter
+        ),
         'evo_ant_turn': (
             # os.path.join(os.path.dirname(__file__), "assets", "evo_ant_body_base2.xml"),
             # os.path.join(os.path.dirname(__file__), "assets", "evo_ant_body_base1.xml"), # 
@@ -346,7 +352,6 @@ class MultiEvoAgentEnv(MujocoEnv):
             except:
                 print("Warning: Errors occur when loading xml files.")
                 terminateds = tuple([True, True])
-            
             if self.cur_t == self.cfg.skel_transform_nsteps:
                 self.transit_attribute_transform()
 

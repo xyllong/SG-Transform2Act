@@ -499,7 +499,8 @@ class Robot:
         self.param_mapping = cfg.get('param_mapping', 'clip')
         self.tree = None    # xml tree
         self.load_from_xml(xml, is_xml_str)
-        # self.init_bodies()
+        if "evo" in xml.split('/')[-1]:
+            self.init_bodies() #evo
         self.param_names = self.get_params(get_name=True)
         self.init_params = self.get_params()
 

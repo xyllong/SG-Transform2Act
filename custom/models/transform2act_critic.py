@@ -20,8 +20,10 @@ class Transform2ActValue(nn.Module):
         self.attr_design_dim = agent.attr_design_dim
         self.state_dim = agent.state_dim + self.design_flag_in_state * (3 if self.onehot_design_flag else 1)
 
+        z_num = cfg.get('z_num', 6)
+
         if 'egnn' in cfg and cfg['egnn']:
-            self.frame_gnn = SGNN(state_dim = self.sim_obs_dim, attr_fixed_dim = self.attr_fixed_dim, attr_design_dim = self.attr_design_dim+ self.design_flag_in_state * (3 if self.onehot_design_flag else 1), msg_dim = 32)
+            self.frame_gnn = SGNN(state_dim = self.sim_obs_dim, attr_fixed_dim = self.attr_fixed_dim, attr_design_dim = self.attr_design_dim+ self.design_flag_in_state * (3 if self.onehot_design_flag else 1), msg_dim = 32, p_step=3, z_num=z_num)
         else:
             self.frame_gnn = None
 
