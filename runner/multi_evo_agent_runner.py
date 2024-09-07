@@ -258,6 +258,8 @@ class MultiEvoAgentRunner(BaseRunner):
         ma_memory = []
         for i in range(self.agent_num): ma_memory.append(Memory())
 
+        t01 = 0
+        t12 = 0
         while ma_logger[0].num_steps < min_batch_size:
             # sample random opponent old policies before every rollout
             samplers = {}
@@ -321,7 +323,7 @@ class MultiEvoAgentRunner(BaseRunner):
                 use_mean_action = mean_action or torch.bernoulli(torch.tensor([1 - self.noise_rate])).item()
                 # select actions
                 actions = []
-                
+                t0 = time.time()
                 for i, sampler in samplers.items():
                     if hasattr(sampler, 'flag') and self.env.agents[i].flag == "evo":
                         actions.append(sampler.policy_net.select_action([state_var[i]], use_mean_action).squeeze().numpy().astype(np.float64))
@@ -329,9 +331,11 @@ class MultiEvoAgentRunner(BaseRunner):
                         actions.append(sampler.policy_net.select_action([state_var[i]], use_mean_action).squeeze().numpy().astype(np.float64))
                     else:
                         actions.append(sampler.policy_net.select_action(state_var[i], use_mean_action).squeeze().numpy().astype(np.float64))
-                
+                t1 = time.time()
                 next_states, env_rewards, terminateds, truncated, infos = self.env.step(actions)
-                
+                t2 = time.time()
+                t01 += t1 - t0
+                t12 += t2 - t1
                 # normalize states
                 for i, sampler in samplers.items():
                     if sampler.running_state is not None:
@@ -386,7 +390,7 @@ class MultiEvoAgentRunner(BaseRunner):
 
             for logger in ma_logger: logger.end_episode(self.env)
         for logger in ma_logger: logger.end_sampling()
-        
+        print(f'{pid}: {t01} {t12}')
         if queue is not None:
             queue.put([pid, ma_memory, ma_logger, total_score, design_params])
         else:
@@ -480,18 +484,48 @@ class MultiEvoAgentRunner(BaseRunner):
 
                     design_params_0 = [None] * nthreads
                     design_params_1 = [None] * nthreads
+                    # t0 = time.time()
+                    # for i in range(nthreads-1):
+                    #     print(i)
+                    #     worker_args_0 = (i+1, queue_0, thread_batch_size, mean_action, render, np.random.RandomState(), 0)
+                    #     worker_0 = multiprocessing.Process(target=self.sample_worker, args=worker_args_0)
+                    #     worker_0.start()
+                    #     worker_args_1 = (i+1, queue_1, thread_batch_size, mean_action, render, np.random.RandomState(), 1)
+                    #     worker_1 = multiprocessing.Process(target=self.sample_worker, args=worker_args_1)
+                    #     worker_1.start()
+                    # t1 = time.time()
+                    # memories_0[0], loggers_0[0], total_scores_0[0], design_params_0[0] = self.sample_worker(0, None, thread_batch_size, mean_action, render, np.random.RandomState(), 0)
+                    # memories_1[0], loggers_1[0], total_scores_1[0], design_params_1[0] = self.sample_worker(0, None, thread_batch_size, mean_action, render, np.random.RandomState(), 1)
+                    # t2 = time.time()
 
-                    for i in range(nthreads-1):
-                        worker_args_0 = (i+1, queue_0, thread_batch_size, mean_action, render, np.random.RandomState(), 0)
+                    # for i in range(nthreads - 1):
+                    #     pid_0, worker_memory_0, worker_logger_0, total_score_0, design_param_0 = queue_0.get()
+                    #     memories_0[pid_0] = worker_memory_0
+                    #     loggers_0[pid_0] = worker_logger_0
+                    #     total_scores_0[pid_0] = total_score_0
+                    #     design_params_0[pid_0] = design_param_0
+
+                    #     pid_1, worker_memory_1, worker_logger_1, total_score_1, design_param_1 = queue_1.get()
+                    #     memories_1[pid_1] = worker_memory_1
+                    #     loggers_1[pid_1] = worker_logger_1
+                    #     total_scores_1[pid_1] = total_score_1
+                    #     design_params_1[pid_1] = design_param_1
+                    
+                    # t3 = time.time()
+                    # print(f'{t1-t0} {t2-t1} {t3-t2}')
+                    
+                    t0 = time.time()
+                    for i in range(nthreads):
+                        print(i)
+                        worker_args_0 = (i, queue_0, thread_batch_size, mean_action, render, np.random.RandomState(), 0)
                         worker_0 = multiprocessing.Process(target=self.sample_worker, args=worker_args_0)
                         worker_0.start()
-                        worker_args_1 = (i+1, queue_1, thread_batch_size, mean_action, render, np.random.RandomState(), 1)
+                        worker_args_1 = (i, queue_1, thread_batch_size, mean_action, render, np.random.RandomState(), 1)
                         worker_1 = multiprocessing.Process(target=self.sample_worker, args=worker_args_1)
                         worker_1.start()
-                    memories_0[0], loggers_0[0], total_scores_0[0], design_params_0[0] = self.sample_worker(0, None, thread_batch_size, mean_action, render, np.random.RandomState(), 0)
-                    memories_1[0], loggers_1[0], total_scores_1[0], design_params_1[0] = self.sample_worker(0, None, thread_batch_size, mean_action, render, np.random.RandomState(), 1)
+                    t1 = time.time()
 
-                    for i in range(nthreads - 1):
+                    for i in range(nthreads):
                         pid_0, worker_memory_0, worker_logger_0, total_score_0, design_param_0 = queue_0.get()
                         memories_0[pid_0] = worker_memory_0
                         loggers_0[pid_0] = worker_logger_0
@@ -503,6 +537,9 @@ class MultiEvoAgentRunner(BaseRunner):
                         loggers_1[pid_1] = worker_logger_1
                         total_scores_1[pid_1] = total_score_1
                         design_params_1[pid_1] = design_param_1
+                    t2 = time.time()
+                    
+                    # print(f'{t1-t0} {t2-t1}')
                     
                     design_params0 = []
                     design_params1 = []

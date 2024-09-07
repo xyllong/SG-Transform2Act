@@ -93,21 +93,57 @@ class DevPolicy(nn.Module):
         return obs, edges_new, num_nodes, num_nodes_cum
 
     def forward(self, x):
+        '''
+        2048xdim_s -> 2048xdim_a
+        
+        '''
         stages = ['attribute_transform', 'execution']
         x_dict = defaultdict(list)
         design_mask = defaultdict(list)
+        
+        isbatch = len(x) > 1
+        import time 
+        
+        t0 = time.time()
+        
+        # speedup
+        # stage_inds = list(zip(*x))[0]
+        # stage_inds = torch.cat(stage_inds).cpu().numpy()
+        
+        # for i, x_i in enumerate(x):
+        #     # cur_stage = stages[int(x_i[0].item())] # TODO: 慢
+        #     cur_stage = stages[stage_inds[i]] # 快
+        #     x_dict[cur_stage].append(x_i)
+        #     for stage in stages:
+        #         design_mask[stage].append(cur_stage == stage)
+        # # 
+        if isbatch:
+            for i, stage in enumerate(stages):
+                design_mask[stage] = (x.stage_ind==i).squeeze()
+                x_dict[stage] = x[(x.stage_ind==i).squeeze()]
+        else:
+            stage_inds = list(zip(*x))[0]
+            stage_inds = torch.cat(stage_inds).cpu().numpy()
 
-        for i, x_i in enumerate(x):
-            cur_stage = stages[int(x_i[0].item())]
-            x_dict[cur_stage].append(x_i)
-            for stage in stages:
-                design_mask[stage].append(cur_stage == stage)
+            for i, x_i in enumerate(x):
+                # cur_stage = stages[int(x_i[0].item())] # TODO: 慢
+                cur_stage = stages[stage_inds[i]] # 快
+                x_dict[cur_stage].append(x_i)
+                for stage in stages:
+                    design_mask[stage].append(cur_stage == stage)
+        # 
+        t01 = time.time()
         for stage in stages:
-            design_mask[stage] = torch.BoolTensor(design_mask[stage])
+            if not isbatch:
+                design_mask[stage] = torch.BoolTensor(design_mask[stage])
         # print(design_mask)
-
+        t1 = time.time()
+        
         if len(x_dict['attribute_transform']) > 0:
-            stage_ind, scale_state, sim_obs = self.batch_data(x_dict['attribute_transform'])
+            if isbatch:
+                stage_ind, scale_state, sim_obs = x_dict['attribute_transform'].stage_ind, x_dict['attribute_transform'].scale_state, x_dict['attribute_transform'].sim_obs
+            else:
+                stage_ind, scale_state, sim_obs = self.batch_data(x_dict['attribute_transform'])
             x = scale_state
             x = self.scale_norm(x)
             x = self.scale_mlp(x)
@@ -120,24 +156,29 @@ class DevPolicy(nn.Module):
             scale_dist = DiagGaussian(scale_state_mean, scale_state_std / 5)
         else:
             scale_dist = None
-
+        t2 = time.time()
+        
         if len(x_dict['execution']) > 0:
-            stage_ind, scale_state, sim_obs = self.batch_data(x_dict['execution'])
+            # TODO: 慢
+            if isbatch:
+                stage_ind, scale_state, sim_obs = x_dict['execution'].stage_ind, x_dict['execution'].scale_state, x_dict['execution'].sim_obs
+            else:
+                stage_ind, scale_state, sim_obs = self.batch_data(x_dict['execution'])
+
             if self.cfg.use_entire_obs:
                 # use entire obs as control nn input
                 x = torch.cat((stage_ind, scale_state, sim_obs), -1)
             else:
                 # use only sim_obs as control nn input
                 x = sim_obs
+            
             x = self.control_norm(x)
-
             if self.frame_gnn is not None: 
                 bz = x.shape[0]
                 x, edges, _, num_nodes_cum_control = self.batch_data_graph(x_dict['execution'], x)
                 # self.frame_gnn.change_morphology(edges, num_nodes)
                 x = self.frame_gnn(x, edges, num_nodes_cum_control,dev=True)
                 x = x.reshape(bz, -1)
-
             x = self.control_mlp(x)
             control_action_mean = self.control_action_mean(x)
             control_action_log_std = self.control_action_log_std.expand_as(control_action_mean)
@@ -146,6 +187,12 @@ class DevPolicy(nn.Module):
         else:
             control_dist = None
 
+        t3 = time.time()
+        
+        if isbatch:
+            # print(f'{t1-t0}({t01-t0} {t1-t01}) {t2-t1} {t3-t2}')
+            pass
+            
         return scale_dist, control_dist, design_mask, x.device
 
     def select_action(self, x, mean_action=False):
@@ -176,32 +223,38 @@ class DevPolicy(nn.Module):
 
         return action
 
+    # 慢 0.07~0.1s
     def get_log_prob(self, states, actions):
         # print(len(state))
         # print(len(action))
+        
+        # TODO: 慢 0.05s
         scale_dist, control_dist, design_mask, device = self.forward(states)
         action_log_prob = torch.zeros(design_mask['execution'].shape[0], 1).to(device)
 
         # scale transform log prob
         if scale_dist is not None:
-            scale_action = []
-            for ind, _ in enumerate(actions):
-                if design_mask['attribute_transform'][ind]:
-                    scale_action.append(_[:self.scale_state_dim])
-            scale_action = torch.stack(scale_action, 0)
+            # scale_action = []
+            # for ind, _ in enumerate(actions):
+            #     if design_mask['attribute_transform'][ind]:
+            #         scale_action.append(_[:self.scale_state_dim])
+            # scale_action = torch.stack(scale_action, 0)
+            scale_action = actions[design_mask['attribute_transform']][:, :self.scale_state_dim]
 
             scale_state_log_prob = scale_dist.log_prob(scale_action)
             action_log_prob[design_mask['attribute_transform']] = scale_state_log_prob
 
+        # 0.02s
         # execution log prob
         if control_dist is not None:
-            control_action = []
-            for ind, _ in enumerate(actions):
-                if design_mask['execution'][ind]:
-                    control_action.append(_[self.scale_state_dim:])
-            control_action = torch.stack(control_action, 0)
+            # control_action = []
+            # for ind, _ in enumerate(actions):
+            #     if design_mask['execution'][ind]:
+            #         control_action.append(_[self.scale_state_dim:])
+            # control_action = torch.stack(control_action, 0)
+            control_action = actions[design_mask['execution']][:, self.scale_state_dim:]
 
             control_action_log_prob = control_dist.log_prob(control_action)
             action_log_prob[design_mask['execution']] = control_action_log_prob
-
+        
         return action_log_prob

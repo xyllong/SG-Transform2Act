@@ -5,6 +5,40 @@ from lib.utils.tools import *
 from lib.rl.core import estimate_advantages
 import math
 
+class BatchStates:
+    def __init__(self, device):
+        self.device = device
+        
+    def gather(self, states):
+        self.stage_ind, self.scale_state, self.edges, self.num_nodes, self.sim_obs = zip(*states)
+        self.stage_ind = torch.tensor(np.array(self.stage_ind), device=self.device)
+        self.scale_state = torch.tensor(np.array(self.scale_state), device=self.device)
+        self.edges = torch.tensor(np.array(self.edges), device=self.device)
+        self.num_nodes = torch.tensor(np.array(self.num_nodes), device=self.device)
+        self.sim_obs = torch.tensor(np.array(self.sim_obs), device=self.device)
+
+    def assign(self, stage_ind, scale_state, edges, num_nodes, sim_obs):
+        self.stage_ind = stage_ind
+        self.scale_state = scale_state
+        self.edges = edges
+        self.num_nodes = num_nodes
+        self.sim_obs = sim_obs
+    
+    def __len__(self):
+        return len(self.stage_ind)
+
+    def __getitem__(self, index):
+        '''
+        single element -> components 
+        slice -> BatchStates
+        '''
+        if isinstance(index, int):
+            return self.stage_ind[index], self.scale_state[index], self.edges[index], self.num_nodes[index], self.sim_obs[index]
+        else:
+            states = BatchStates(self.device)
+            states.assign(self.stage_ind[index], self.scale_state[index], self.edges[index], self.num_nodes[index], self.sim_obs[index])
+            return states
+
 def tensorfy(np_list, device=torch.device('cpu')):
     if isinstance(np_list[0], list):
         return [[torch.tensor(x).to(device) for i, x in enumerate(y)] for y in np_list]
@@ -126,25 +160,43 @@ class DevLearner:
         for param in self.scheduled_params.values():
             param.set_epoch(epoch)
 
+
     def update_params(self, batch):
+        import time 
+        t0 = time.time()
         to_train(*self.update_modules)
-        states = tensorfy(batch.states, self.device)
-        actions = tensorfy(batch.actions, self.device)
+        # TODO: 慢 30~40s
+        # states = tensorfy(batch.states, self.device) # List[[stage_ind, scale_state, edges, num_nodes, sim_obs]]
+        states = BatchStates(self.device)
+        states.gather(batch.states)
+
+        #
+        t1 = time.time()
+        # actions = tensorfy(batch.actions, self.device)
+        actions = torch.tensor(np.array(batch.actions), device=self.device)
         rewards = torch.from_numpy(batch.rewards).to(self.dtype).to(self.device)
         masks = torch.from_numpy(batch.masks).to(self.dtype).to(self.device)
+        
+        t2 = time.time()
 
+        # TODO: 4s~40s
         with torch.no_grad():
             values = self.value_net(states)
             fixed_log_probs = self.policy_net.get_log_prob(states, actions)
-
         """get advantage estimation from the trajectories"""
         advantages, returns = estimate_advantages(rewards, masks, values, self.cfg.gamma, self.cfg.tau)
-
         """perform mini-batch PPO update"""
         optim_iter_num = int(math.ceil(len(states) / self.mini_batch_size))
-
         policy_losses = []
         value_losses = []
+        #
+        
+        t3 = time.time()
+        
+        tab = 0
+        tabs = []
+    
+        # TODO: 慢 30~40s=300x0.1s -> 22s
         for _ in range(self.num_optim_epoch):
             perm_np = np.arange(len(states))
             np.random.shuffle(perm_np)
@@ -152,30 +204,48 @@ class DevLearner:
 
             def index_select_list(x, ind):
                 return [x[i] for i in ind]
-
+            
+            # states, actions, returns, advantages, fixed_log_probs = \
+            #     index_select_list(states, perm_np.tolist()), index_select_list(actions, perm_np), \
+            #     returns[perm].clone(), advantages[perm].clone(), \
+            #     fixed_log_probs[perm].clone()
+            
             states, actions, returns, advantages, fixed_log_probs = \
-                index_select_list(states, perm_np), index_select_list(actions, perm_np), \
+                states[perm_np.tolist()], actions[perm_np.tolist()], \
                 returns[perm].clone(), advantages[perm].clone(), \
                 fixed_log_probs[perm].clone()
-
+            
             for i in range(optim_iter_num):
                 ind = slice(i * self.mini_batch_size, min((i + 1) * self.mini_batch_size, len(states)))
                 states_b, actions_b, advantages_b, returns_b, fixed_log_probs_b = \
                     states[ind], actions[ind], advantages[ind], returns[ind], fixed_log_probs[ind]
-
+                # TODO: 慢 0.1s -> 0.05
+                ta = time.time()
                 policy_loss_i, value_loss_i, entropy_i = \
                     self.ppo_step(self.policy_net, self.value_net, self.optimizer_policy, self.optimizer_value,
                                   1, states_b, actions_b, returns_b, advantages_b, fixed_log_probs_b,
                                   self.clip_epsilon, self.cfg.l2_reg)
+                #
+                tb = time.time()
+                tab += tb - ta
+                tabs.append(tb-ta)
                 policy_losses.append(policy_loss_i.item())
                 value_losses.append(value_loss_i.item())
+        
+        t4 = time.time()
+        print(f'{len(states)}: {t1-t0} {t2-t1} {t3-t2} {t4-t3}({tab})')
+        import ipdb
+        ipdb.set_trace()
         return np.mean(policy_losses), np.mean(value_losses)
 
 
+    # TODO: 慢 0.1~0.15s -> 0.08~0.1s
     def ppo_step(self, policy_net, value_net, optimizer_policy, optimizer_value, optim_value_iternum, states, actions,
                  returns, advantages, fixed_log_probs, clip_epsilon, l2_reg):
-
+        import time
+        t0 = time.time()
         """update critic"""
+        # TODO: 慢 0.03s
         for _ in range(optim_value_iternum):
             values_pred = value_net(states)
             value_loss = (values_pred - returns).pow(2).mean()
@@ -185,21 +255,28 @@ class DevLearner:
             optimizer_value.zero_grad()
             value_loss.backward()
             optimizer_value.step()
-
-        """update policy"""
+        
+        t1 = time.time()
+        """update policy""" # TODO: 慢 0.07s -> 0.03s
         log_probs = policy_net.get_log_prob(states, actions)
+        
         probs = torch.exp(log_probs)
         entropy = torch.sum(-(log_probs * probs))
+        
 
         ratio = torch.exp(log_probs - fixed_log_probs)
         surr1 = ratio * advantages
         surr2 = torch.clamp(ratio, 1.0 - clip_epsilon, 1.0 + clip_epsilon) * advantages
         policy_surr = -torch.min(surr1, surr2).mean()
         # policy_surr = -torch.min(surr1, surr2).mean() - self.cfg.entropy_coeff * entropy
+        
+        t2 = time.time()
+        # TODO: 慢 0.03s
         optimizer_policy.zero_grad()
         policy_surr.backward()
-
         torch.nn.utils.clip_grad_norm_(policy_net.parameters(), 40)
         optimizer_policy.step()
-
+        t3 = time.time()
+        
+        print(f'{t3-t0} = {t1-t0} {t2-t1} {t3-t2}')
         return policy_surr, value_loss, entropy

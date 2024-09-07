@@ -63,7 +63,10 @@ class DevValue(nn.Module):
         return obs, edges_new, num_nodes, num_nodes_cum
 
     def forward(self, x_dict):
-        stage_ind, scale_state, sim_obs = self.batch_data(x_dict)
+        # stage_ind, scale_state, sim_obs = self.batch_data(x_dict)
+        stage_ind = x_dict.stage_ind
+        scale_state = x_dict.scale_state
+        sim_obs = x_dict.sim_obs
         if self.frame_gnn is not None: 
             bz = sim_obs.shape[0]
             sim_obs, edges, _, num_nodes_cum_control = self.batch_data_graph(x_dict, sim_obs)
