@@ -98,8 +98,12 @@ class DevPolicy(nn.Module):
         x_dict = defaultdict(list)
         design_mask = defaultdict(list)
 
+        stage_inds= list(zip(*x))[0]
+        stage_inds = torch.cat(stage_inds).cpu().numpy()
+        
         for i, x_i in enumerate(x):
-            cur_stage = stages[int(x_i[0].item())]
+            # cur_stage = stages[int(x_i[0].item())] # TODO: 慢
+            cur_stage = stages[stage_inds[i]] # 快
             x_dict[cur_stage].append(x_i)
             for stage in stages:
                 design_mask[stage].append(cur_stage == stage)
