@@ -11,7 +11,7 @@ from competevo.evo_envs.robot.xml_robot import Robot
 from lib.utils import get_single_body_qposaddr, get_graph_fc_edges
 from custom.utils.transformation import quaternion_matrix
 
-SCALE_MAX = 0.5
+SCALE_MAX = 0.3
 
 def mass_center(mass, xpos):
     # This is a bug of openai multiagent-competition release.
@@ -37,7 +37,7 @@ class DevHumanoid(Agent):
         self.robot = Robot(cfg.robot_cfg, xml=xml_path)
 
         self.stage = "attribute_transform"
-        self.scale_vector = np.random.uniform(low=-1., high=1., size=14)
+        self.scale_vector = np.random.uniform(low=-1., high=1., size=8)
 
         self.GOAL = np.array([0, 0, 0])
 
@@ -102,9 +102,9 @@ class DevHumanoid(Agent):
                     geom.set("size", p)
 
             if cur_name == "pelvis":
-                p = body.get("pos")
-                p = multiply_str_arr(p, [1,1,a[1]])
-                body.set("pos", p)
+                # p = body.get("pos")
+                # p = multiply_str_arr(p, [1,1,a[1]])
+                # body.set("pos", p)
 
                 geom = body.find('geom') #1
                 if geom is not None:
@@ -140,22 +140,22 @@ class DevHumanoid(Agent):
                 geom = body.find('geom') 
                 if geom is not None:
                     p = geom.get("fromto")
-                    p = multiply_str(p, a[6])
+                    p = multiply_str(p, a[4])
                     geom.set("fromto", p)
 
                     p = geom.get("size")
-                    p = multiply_str(p, a[7])
+                    p = multiply_str(p, a[5])
                     geom.set("size", p)
 
             if cur_name == "right_foot":
                 p = body.get("pos")
-                p = multiply_str(p, a[6])
+                p = multiply_str(p, a[4])
                 body.set("pos", p)
 
                 geom = body.find('geom') 
                 if geom is not None:
                     p = geom.get("size")
-                    p = multiply_str(p, a[8])
+                    p = multiply_str(p, (a[4]+a[5])/2)
                     geom.set("size", p)
 
             #left_leg
@@ -167,37 +167,37 @@ class DevHumanoid(Agent):
                 geom = body.find('geom') 
                 if geom is not None:
                     p = geom.get("fromto")
-                    p = multiply_str(p, a[9])
+                    p = multiply_str(p, a[6])
                     geom.set("fromto", p)
 
                     p = geom.get("size")
-                    p = multiply_str(p, a[10])
+                    p = multiply_str(p, a[7])
                     geom.set("size", p)
 
             if cur_name == "left_shin":
                 p = body.get("pos")
-                p = multiply_str(p, a[9])
+                p = multiply_str(p, a[6])
                 body.set("pos", p)
 
                 geom = body.find('geom') 
                 if geom is not None:
                     p = geom.get("fromto")
-                    p = multiply_str(p, a[11])
+                    p = multiply_str(p, a[6])
                     geom.set("fromto", p)
 
                     p = geom.get("size")
-                    p = multiply_str(p, a[12])
+                    p = multiply_str(p, a[7])
                     geom.set("size", p)
 
             if cur_name == "left_foot":
                 p = body.get("pos")
-                p = multiply_str(p, a[11])
+                p = multiply_str(p, a[6])
                 body.set("pos", p)
 
                 geom = body.find('geom') 
                 if geom is not None:
                     p = geom.get("size")
-                    p = multiply_str(p, a[13])
+                    p = multiply_str(p, (a[6]+a[7])/2)
                     geom.set("size", p)
 
             # #right_arm
@@ -286,7 +286,7 @@ class DevHumanoid(Agent):
 
             if cur_name == "right_knee":
                 p = motor.get("gear")
-                p = multiply_str(p, b[5])
+                p = multiply_str(p, (b[4]+b[5])/2)
                 motor.set("gear", p)
 
             
@@ -302,7 +302,7 @@ class DevHumanoid(Agent):
 
             if cur_name == "left_knee":
                 p = motor.get("gear")
-                p = multiply_str(p, b[10])
+                p = multiply_str(p, (b[6]+b[7])/2)
                 motor.set("gear", p)
 
             # if cur_name == "right_shoulder1" or cur_name == "right_shoulder2":
