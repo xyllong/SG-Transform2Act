@@ -11,7 +11,7 @@ from competevo.evo_envs.robot.xml_robot import Robot
 from lib.utils import get_single_body_qposaddr, get_graph_fc_edges
 from custom.utils.transformation import quaternion_matrix
 
-SCALE_MAX = 0.3
+SCALE_MAX = 0.8
 
 def mass_center(mass, xpos):
     # This is a bug of openai multiagent-competition release.
