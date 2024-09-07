@@ -570,4 +570,4 @@ class DevHumanoid(Agent):
         self.set_goal(goal)
 
         self.stage = 'attribute_transform'
-        self.scale_vector = np.random.uniform(low=-1., high=1., size=14)
+        self.scale_vector = np.random.uniform(low=-1., high=1., size=8)
