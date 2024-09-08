@@ -6,6 +6,8 @@ agent_specs:
 
 egnn: True
 z_num: 5
+z_dim: 12
+msg_dim: 24
 
 # training parameters
 gamma: 0.995

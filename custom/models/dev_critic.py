@@ -25,10 +25,12 @@ class DevValue(nn.Module):
         cur_dim = self.state_dim
 
         z_num = cfg.cfg.get('z_num', 6)
+        msg_dim = cfg.cfg.get('msg_dim', 32)
+        z_dim = cfg.cfg.get('z_dim', 16)
 
 
         if 'egnn' in cfg.cfg and cfg.cfg['egnn'] and ((self.agent.scope == 'agent0' and 'sg'in cfg.cfg['env_name'].split('-')[-3]) or (self.agent.scope == 'agent1' and 'sg'in cfg.cfg['env_name'].split('-')[-2]) or ('turn'in cfg.cfg['env_name'].split('-')[-5])):
-            self.frame_gnn = SGNN(state_dim = self.sim_obs_dim//len(self.agent.body_ids), attr_fixed_dim = 0, attr_design_dim = 0, msg_dim = 32, p_step = 3, z_num = z_num)
+            self.frame_gnn = SGNN(state_dim = self.sim_obs_dim//len(self.agent.body_ids), attr_fixed_dim = 0, attr_design_dim = 0, msg_dim = msg_dim, p_step = 3, z_num = z_num, z_dim=z_dim)
         else:
             self.frame_gnn = None
 
