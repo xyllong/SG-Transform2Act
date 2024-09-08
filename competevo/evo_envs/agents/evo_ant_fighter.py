@@ -1,4 +1,4 @@
-from gym_compete.new_envs.agents import Ant
+from gym_compete.new_envs.agents import *
 from gymnasium.spaces import Box
 import numpy as np
 import os
@@ -16,10 +16,10 @@ from custom.utils.transformation import quaternion_matrix
 
 UNCHANGED = ["11", "12", "13", "14"]
 
-class EvoAntTurn(Ant):
+class EvoAntFighter(RoboAntFighter):
 
     def __init__(self, agent_id, cfg, xml_path=None, n_agents=2):
-        super(EvoAntTurn, self).__init__(agent_id, xml_path, n_agents)
+        super(EvoAntFighter, self).__init__(agent_id, xml_path, n_agents)
         self.cfg = cfg
         self.xml_folder = os.path.dirname(xml_path)
 
@@ -43,7 +43,7 @@ class EvoAntTurn(Ant):
         self.attr_specs = set(cfg.obs_specs.get('attr', []))
         self.control_action_dim = 1
         self.skel_num_action = 3 if cfg.enable_remove else 2
-        self.sim_obs_dim = 21#15+2 #13
+        self.sim_obs_dim = 21+3#15+2 #13
         self.attr_fixed_dim = self.get_attr_fixed().shape[-1]
 
         self.state_dim = self.attr_fixed_dim + self.sim_obs_dim + self.attr_design_dim
@@ -73,13 +73,14 @@ class EvoAntTurn(Ant):
         return np.array([X, Y, Z])
     
     def before_step(self):
-        self.env.data.geom_xpos[1] = self.GOAL
-        self._xposbefore = self.get_body_com("0")[:2]
+        # self.env.data.geom_xpos[1] = self.GOAL
+        # self._xposbefore = self.get_body_com("0")[:2]
+        self.posbefore = self.get_qpos()[:2].copy()
 
-        self.dist_before = np.linalg.norm(self.GOAL[:2]-self._xposbefore)
+        # self.dist_before = np.linalg.norm(self.GOAL[:2]-self._xposbefore)
 
-        torso_quat = self.env.data.qpos[3:7]
-        self.torso_euler = self.quat2euler(torso_quat)
+        # torso_quat = self.env.data.qpos[3:7]
+        # self.torso_euler = self.quat2euler(torso_quat)
 
     # def after_step(self, action):
     #     xposafter = self.get_body_com("0")[0]
@@ -108,75 +109,85 @@ class EvoAntTurn(Ant):
     #     return reward, terminated, reward_info
 
     def after_step(self, action):
-        xposafter = self.get_body_com("0")[:2]
-        # forward_reward = (xposafter - self._xposbefore) / self.env.dt
-        self.dist_after = np.linalg.norm(self.GOAL[:2]-xposafter)
-        dist_reward = (self.dist_before - self.dist_after) / self.env.dt
+        """ RoboSumo design.
+        """
+        self.posafter = self.get_qpos()[:2].copy()
+        # Control cost
+        control_reward = - self.COST_COEFS['ctrl'] * np.square(action).sum()
 
+        alive_reward = 2.0
 
-        heading = np.array([np.cos(self.torso_euler[2]), np.sin(self.torso_euler[2])])
-        forward_reward =  np.dot(heading, xposafter - self._xposbefore) / self.env.dt
-        # if self.move_left:
-        #     forward_reward *= -1
+        return control_reward, alive_reward
         
-        # ctrl_cost = .5 * np.square(action).sum()
-        # cfrc_ext = self.get_cfrc_ext()
-        # contact_cost = 0.5 * 1e-3 * np.sum(
-        #     np.square(np.clip(cfrc_ext, -1, 1))
-        # )
+        # xposafter = self.get_body_com("0")[:2]
+        # # forward_reward = (xposafter - self._xposbefore) / self.env.dt
+        # self.dist_after = np.linalg.norm(self.GOAL[:2]-xposafter)
+        # dist_reward = (self.dist_before - self.dist_after) / self.env.dt
+
+
+        # heading = np.array([np.cos(self.torso_euler[2]), np.sin(self.torso_euler[2])])
+        # forward_reward =  np.dot(heading, xposafter - self._xposbefore) / self.env.dt
+        # # if self.move_left:
+        # #     forward_reward *= -1
+        
+        # # ctrl_cost = .5 * np.square(action).sum()
+        # # cfrc_ext = self.get_cfrc_ext()
+        # # contact_cost = 0.5 * 1e-3 * np.sum(
+        # #     np.square(np.clip(cfrc_ext, -1, 1))
+        # # )
     
-        # ctrl_cost = 1e-4 * np.square(action).mean()
-        ctrl_cost = 1e-2 * np.square(action).sum()
-        contact_cost = 0
+        # # ctrl_cost = 1e-4 * np.square(action).mean()
+        # ctrl_cost = 1e-2 * np.square(action).sum()
+        # contact_cost = 0
 
-        survive = 1.0
-        reward = 5*forward_reward+ 10*dist_reward - ctrl_cost - contact_cost + survive
+        # survive = 1.0
+        # reward = 5*forward_reward+ 10*dist_reward - ctrl_cost - contact_cost + survive
 
-        reward_info = dict()
-        reward_info['reward_dist'] = dist_reward
-        reward_info['reward_forward'] = forward_reward
-        reward_info['reward_ctrl'] = ctrl_cost
-        reward_info['reward_contact'] = contact_cost
-        reward_info['reward_survive'] = survive
-        reward_info['reward_dense'] = reward
+        # reward_info = dict()
+        # reward_info['reward_dist'] = dist_reward
+        # reward_info['reward_forward'] = forward_reward
+        # reward_info['reward_ctrl'] = ctrl_cost
+        # reward_info['reward_contact'] = contact_cost
+        # reward_info['reward_survive'] = survive
+        # reward_info['reward_dense'] = reward
 
-        info = reward_info
-        info['use_transform_action'] = False
-        info['stage'] = 'execution'
-        info['dist'] = self.dist_after
+        # info = reward_info
+        # info['use_transform_action'] = False
+        # info['stage'] = 'execution'
+        # info['dist'] = self.dist_after
 
-        # terminate condition
-        qpos = self.get_qpos()
-        height = qpos[2]
-        zdir = quaternion_matrix(qpos[3:7])[:3, 2]
-        ang = np.arccos(zdir[2])
-        done_condition = self.cfg.done_condition
-        min_height = done_condition.get('min_height', 0.28)
-        max_height = done_condition.get('max_height', .8) #0.8
-        max_ang = done_condition.get('max_ang', 3600)
+        # # terminate condition
+        # qpos = self.get_qpos()
+        # height = qpos[2]
+        # zdir = quaternion_matrix(qpos[3:7])[:3, 2]
+        # ang = np.arccos(zdir[2])
+        # done_condition = self.cfg.done_condition
+        # min_height = done_condition.get('min_height', 0.28)
+        # max_height = done_condition.get('max_height', .8) #0.8
+        # max_ang = done_condition.get('max_ang', 3600)
 
-        # terminated = not (np.isfinite(self.get_qpos()).all() and np.isfinite(self.get_qvel()).all() and (height > min_height) and (height < max_height) and (abs(ang) < np.deg2rad(max_ang)))
-        terminated = not (np.isfinite(self.get_qpos()).all() and np.isfinite(self.get_qvel()).all() and (height > min_height) and (height < max_height))
-        info['dead'] = (height <= min_height) 
+        # # terminated = not (np.isfinite(self.get_qpos()).all() and np.isfinite(self.get_qvel()).all() and (height > min_height) and (height < max_height) and (abs(ang) < np.deg2rad(max_ang)))
+        # terminated = not (np.isfinite(self.get_qpos()).all() and np.isfinite(self.get_qvel()).all() and (height > min_height) and (height < max_height))
+        # info['dead'] = (height <= min_height) 
 
-        if self.reached_goal():
-            # print("setp——reached_goal")
-            reward += 1000
-            goal_pos_r = np.random.uniform(3, 4)
-            if self.symmetric:
-                goal_pos_theta = np.random.uniform(0, 2*np.pi)
-            else:
-                goal_pos_theta = 0
-                xposafter[1] = 0
-            goal = np.array([goal_pos_r * np.cos(goal_pos_theta), goal_pos_r * np.sin(goal_pos_theta), 0])
-            goal[:2] += xposafter
-            # print("before")
-            # print(self.env.data.geom_xpos[1])
-            self.set_goal(goal)
-            # print("after")
-            # print(self.env.data.geom_xpos[1])
+        # if self.reached_goal():
+        #     # print("setp——reached_goal")
+        #     reward += 1000
+        #     goal_pos_r = np.random.uniform(3, 4)
+        #     if self.symmetric:
+        #         goal_pos_theta = np.random.uniform(0, 2*np.pi)
+        #     else:
+        #         goal_pos_theta = 0
+        #         xposafter[1] = 0
+        #     goal = np.array([goal_pos_r * np.cos(goal_pos_theta), goal_pos_r * np.sin(goal_pos_theta), 0])
+        #     goal[:2] += xposafter
+        #     # print("before")
+        #     # print(self.env.data.geom_xpos[1])
+        #     self.set_goal(goal)
+        #     # print("after")
+        #     # print(self.env.data.geom_xpos[1])
 
-        return reward, terminated, info
+        # return reward, terminated, info
 
 
     # def _get_obs(self):
@@ -198,27 +209,33 @@ class EvoAntTurn(Ant):
     #     return obs
 
     def set_env(self, env):
-        self.env = env
-        self._env_init = True
-        self._set_body()
-        self._set_joint()
-        if self.n_agents > 1:
-            self._set_other_joint()
+        super(EvoAntFighter, self).set_env(env)
+        self.arena_id = self.env.geom_names.index('arena')
+        self.arena_height = self.env.model.geom_size[self.arena_id][1] * 2
+        
+        # 2024.09.02
+        # self.env = env
+        # self._env_init = True
+        # self._set_body()
+        # self._set_joint()
+        # if self.n_agents > 1:
+        #     self._set_other_joint()
+        
         # self.set_action_space() # testing only
 
 
-    def reached_goal(self):
-        if self.dist_after < 0.5:
-            # print("Reached Goal")
-            return True
-        return False
-        # if self.n_agents == 1: return False
-        # xpos = self.get_body_com('0')[0]
-        # if self.GOAL > 0 and xpos > self.GOAL:
-        #     return True
-        # elif self.GOAL < 0 and xpos < self.GOAL:
-        #     return True
-        # return False
+    # def reached_goal(self):
+    #     if self.dist_after < 0.5:
+    #         # print("Reached Goal")
+    #         return True
+    #     return False
+    #     # if self.n_agents == 1: return False
+    #     # xpos = self.get_body_com('0')[0]
+    #     # if self.GOAL > 0 and xpos > self.GOAL:
+    #     #     return True
+    #     # elif self.GOAL < 0 and xpos < self.GOAL:
+    #     #     return True
+    #     # return False
 
     def reset_agent(self,**kwargs):
         goal_pos_r = np.random.uniform(3, 4)
@@ -306,41 +323,38 @@ class EvoAntTurn(Ant):
     
     def get_sim_obs(self):
         obs = []
-        if 'root_offset' in self.sim_specs:
-            root_pos = self.env.data.body_xpos[self.env.model._body_name2id[self.robot.bodies[0].name]]
+        # if 'root_offset' in self.sim_specs:
+        #     root_pos = self.env.data.body_xpos[self.env.model._body_name2id[self.robot.bodies[0].name]]
 
         # body_names = []
         # for body in self.robot.bodies:
         #     body_names.append(body.name)
         # print(body_names)
 
+        # Observe self
+        self_forces = np.abs(np.clip(
+            self.get_cfrc_ext(), -self.CFRC_CLIP, self.CFRC_CLIP))
+        
+        other_pos = self.get_other_qpos()
+
         qpos = self.get_qpos()
         qvel = self.get_qvel()
         if self.clip_qvel:
             qvel = np.clip(qvel, -10, 10)
+        root_pos = np.array([0,0,0])
 
-        root_pos = qpos[:2]
-        root_pos = np.append(root_pos, 0)
 
-        # other_pos = self.get_other_qpos()[:2]
-        # if other_pos.shape == (0,):
-            # other_pos = np.zeros(2) # x and y
-            # other_pos = np.random.uniform(-5, 5, 2)
-        other_pos = self.GOAL#np.array([self.GOAL[0],self.GOAL[1],0])
-        other_pos = other_pos - root_pos
-
-        # self.env.data.geom_xpos[1] = np.array([0,0,1])
         
         for i, body in enumerate(self.robot.bodies):
             # print(self.id, self.joint_names[i])
             # print(self.id, self.qvel_start_idx, self.qvel_end_idx)
-            if 'noquat' in self.sim_specs:
-                quat = np.zeros(3)
-            else:
-                quat = self.quat2euler(self.env.data.body(self.scope + "/" +body.name).xquat)
+            # if 'noquat' in self.sim_specs:
+            #     quat = np.zeros(3)
+            # else:
+            #     quat = self.quat2euler(self.env.data.body(self.scope + "/" +body.name).xquat)
             if i == 0:
                 # obs_i = [qpos[2:7], qvel[:6], np.zeros(2), other_pos]
-                obs_i = [self.env.data.body(self.scope + "/" +body.name).xipos - root_pos, other_pos, np.array([0,0,9.8]), quat , qvel[:6], self.env.data.body(self.scope + "/" +body.name).xipos[2:3],np.zeros(2)]
+                obs_i = [self.env.data.body(self.scope + "/" +body.name).xipos - root_pos, other_pos, np.array([0,0,9.8]), self_forces[i] , qvel[:6], self.env.data.body(self.scope + "/" +body.name).xipos[2:3],np.zeros(2)]
             else:
                 # print(self.id, i, body.name)
                 qs, qe = get_single_body_qposaddr(self.env.model, self.scope + "/" + body.name)
@@ -356,7 +370,7 @@ class EvoAntTurn(Ant):
                 else:
                     angle = np.zeros(2)
                 #     obs_i = [np.zeros(13), other_pos]
-                obs_i = [self.env.data.body(self.scope + "/" +body.name).xipos - root_pos, other_pos,  np.array([0,0,9.8]), quat, np.zeros(6), self.env.data.body(self.scope + "/" +body.name).xipos[2:3],angle]
+                obs_i = [self.env.data.body(self.scope + "/" +body.name).xipos - root_pos, other_pos,  np.array([0,0,9.8]), self_forces[i], np.zeros(6), self.env.data.body(self.scope + "/" +body.name).xipos[2:3],angle]
             # if 'root_offset' in self.sim_specs:
             #     offset = self.data.body_xpos[self.model._body_name2id[body.name]][[0, 2]] - root_pos[[0, 2]]
             #     obs_i.append(offset)
@@ -427,6 +441,14 @@ class EvoAntTurn(Ant):
             body_index = self.get_body_index()
             all_obs.append(body_index)
         return all_obs
+    
+    def set_observation_space(self):
+        obs = self._get_obs(self.stage)[0]
+        self.obs_dim = obs.size
+        high = np.inf * np.ones(self.obs_dim)
+        low = -high
+        self.observation_space = Box(low, high)
+
     
     def reset_state(self, add_noise):
         if add_noise:

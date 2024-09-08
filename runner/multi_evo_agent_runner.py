@@ -656,20 +656,20 @@ class MultiEvoAgentRunner(BaseRunner):
                     actions = []
                     for i, learner in self.learners.items():
                         if hasattr(learner, 'flag') and self.env.agents[i].flag == "evo":
-                            actions.append(learner.policy_net.select_action([state_var[i]], use_mean_action).squeeze().numpy().astype(np.float64))
+                            actions.append(learner.policy_net.select_action([state_var[i]], use_mean_action).squeeze().cpu().numpy().astype(np.float64))
                         elif hasattr(learner, 'flag') and self.env.agents[i].flag == "dev":
-                            actions.append(learner.policy_net.select_action([state_var[i]], use_mean_action).squeeze().numpy().astype(np.float64))
+                            actions.append(learner.policy_net.select_action([state_var[i]], use_mean_action).squeeze().cpu().numpy().astype(np.float64))
                         else:
-                            actions.append(learner.policy_net.select_action(state_var[i], use_mean_action).squeeze().numpy().astype(np.float64))
+                            actions.append(learner.policy_net.select_action(state_var[i], use_mean_action).squeeze().cpu().numpy().astype(np.float64))
                 next_states, env_rewards, terminateds, truncated, infos = self.env.step(actions)
                 
                 # 使用 MuJoCo 的渲染方法
-                frame = self.env.env_scene.mujoco_renderer.render(render_mode='rgb_array')
+                # frame = self.env.env_scene.mujoco_renderer.render(render_mode='rgb_array')
 
-                #保存图片
-                img = Image.fromarray(frame)
-                # img.save('test.jpg')
-                imgs.append(img)
+                # #保存图片
+                # img = Image.fromarray(frame)
+                # # img.save('test.jpg')
+                # imgs.append(img)
 
                 # normalize states
                 for i, learner in self.learners.items():
@@ -704,8 +704,8 @@ class MultiEvoAgentRunner(BaseRunner):
             
             total_reward.append(episode_reward)
 
-            if _ == 0:
-                imgs[0].save('test.gif', save_all=True, append_images=imgs[1:], duration=30, loop=0)
+            # if _ == 0:
+            #     imgs[0].save('test.gif', save_all=True, append_images=imgs[1:], duration=30, loop=0)
 
         def average(list):
             total = sum(list)
@@ -737,9 +737,9 @@ class MultiEvoAgentRunner(BaseRunner):
         # import csv
 
         # Append results to test.csv
-        with open('test1.csv', mode='a', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow([self.learners[0].epoch+1, agent0_reward, agent0_win_rate, agent1_reward, agent1_win_rate])
+        # with open('test.csv', mode='a', newline='') as file:
+        #     writer = csv.writer(file)
+        #     writer.writerow([self.learners[0].epoch+1, agent0_reward, agent0_win_rate, agent1_reward, agent1_win_rate])
 
 
         

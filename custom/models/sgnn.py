@@ -206,7 +206,7 @@ class SGNNMessagePassingLayer(nn.Module):
 
 
 class SGNN(nn.Module):
-    def __init__(self, state_dim, attr_fixed_dim, attr_design_dim, msg_dim=128, p_step=4, z_num=6, activation=nn.SiLU()):
+    def __init__(self, state_dim, attr_fixed_dim, attr_design_dim, msg_dim=128, p_step=4, z_num=6, z_dim = 16, activation=nn.SiLU()):
         super(SGNN, self).__init__()
         # initialize the networks
         self.p_step = p_step
@@ -214,7 +214,7 @@ class SGNN(nn.Module):
         self.attr_fixed_dim = attr_fixed_dim
         self.attr_design_dim = attr_design_dim
         self.z_num = z_num
-        self.z_dim = 16
+        self.z_dim = z_dim
         self.embedding_in = nn.Linear(self.attr_fixed_dim+self.attr_design_dim+self.state_dim-self.z_num*3, msg_dim)
         self.embedding_z = nn.Linear(self.z_num, self.z_dim, bias=False)
         self.embedding_u = nn.Linear(self.z_dim, 1, bias=False)

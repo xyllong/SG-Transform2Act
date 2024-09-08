@@ -1,23 +1,11 @@
-env_name: turn-to-goal-devhuman-v0
+env_name: robo-sumo-sgdevbug-sgdevbug-v0
 runner_type: multi-evo-agent-runner
 
 agent_specs:
   batch_design: true
 
-egnn: False
-
-# training parameters
-gamma: 0.995
-tau: 0.95
-dev_policy_specs:
-  scale_htype: tanh
-  scale_mlp: [64, 64]
-  scale_log_std: 0
-  scale_fix_control_std: False
-  control_htype: tanh
-  control_mlp: [64, 128, 64]
-  control_log_std: 0
-  control_fix_control_std: False
+egnn: True
+z_num: 7
 
 robot:
   param_mapping: sin
@@ -46,6 +34,20 @@ robot:
       lb: 20
       ub: 400
 
+# training parameters
+gamma: 0.995
+tau: 0.95
+
+dev_policy_specs:
+  scale_htype: tanh
+  scale_mlp: [64, 64]
+  scale_log_std: 0
+  scale_fix_control_std: False
+  control_htype: tanh
+  control_mlp: [64, 128, 64]
+  control_log_std: 0
+  control_fix_control_std: False
+
 policy_optimizer: 'Adam'
 policy_lr: 5.e-5
 policy_momentum: 0.0
@@ -71,15 +73,10 @@ save_model_interval: 1
 
 use_entire_obs: False
 
-# done_condition:
-#   max_ang: 60
-
 use_reward_scaling: False
-use_opponent_sample: False
-use_shadow_sample: False
-delta: 1.
+use_opponent_sample: True
+delta: 0.5
 
-use_exploration_curriculum: False
+use_exploration_curriculum: True
 termination_epoch: 1000
-use_parse_reward: False
-symmetric: True
+use_parse_reward: True

@@ -15,30 +15,31 @@ evo_policy_specs:
     hdims: [64, 64, 64]
     aggr: add
     bias: true
-  skel_index_mlp:
-    hdims: [128, 128]
-    rescale_linear: true
+  # skel_index_mlp:
+  #   hdims: [128, 128]
+  #   rescale_linear: true
   control_gnn_specs:
     layer_type: graph_conv
     hdims: [64, 64, 64]
     aggr: add
     bias: true
-  control_index_mlp:
-    hdims: [128, 128]
-    rescale_linear: true
+  # control_index_mlp:
+  #   hdims: [128, 128]
+  #   rescale_linear: true
   attr_gnn_specs:
     layer_type: graph_conv
     hdims: [64, 64, 64]
     aggr: add
     bias: true
-  attr_index_mlp:
-    hdims: [128, 128]
-    rescale_linear: true
+  # attr_index_mlp:
+  #   hdims: [128, 128]
+  #   rescale_linear: true
   control_log_std: 0
   attr_log_std: -2.3
   fix_control_std: false
   fix_attr_std: false
-
+  egnn: True
+  z_num: 7
 policy_optimizer: 'Adam'
 policy_lr: 5.e-5
 policy_momentum: 0.0
@@ -54,7 +55,8 @@ evo_value_specs:
     hdims: [64, 64, 64]
     aggr: add
     bias: true
-
+  egnn: True
+  z_num: 7
 value_optimizer: 'Adam'
 value_lr: 3.e-4
 value_momentum: 0.0
@@ -70,14 +72,15 @@ seed: 42
 save_model_interval: 1
 
 robot_param_scale: 1
-skel_transform_nsteps: 3
+skel_transform_nsteps: 5
 
 done_condition:
   max_ang: 60
 
 obs_specs:
   attr: ['depth']
-  sim: []
+  
+  sim: ['noquat']
   design: true
   clip_qvel: true
   use_projected_params: true
@@ -96,8 +99,10 @@ robot:
   body_params:
     offset:
       type: 'xy'
-      lb: [-0.5, -0.5]
-      ub: [0.5, 0.5]
+      # lb: [-0.5, -0.5]
+      # ub: [0.5, 0.5]
+      lb: [-0.4, -0.4]
+      ub: [0.4, 0.4]
 
   joint_params: {}
 
@@ -105,9 +110,9 @@ robot:
     size:
       lb: 0.03
       ub: 0.10
-    ext_start:
-      lb: 0.0
-      ub: 0.2
+    # ext_start:
+    #   lb: 0.0
+    #   ub: 0.2
 
   actuator_params:
     gear:

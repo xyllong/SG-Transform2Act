@@ -1,10 +1,24 @@
-env_name: robo-sumo-sgdevbug-sgdevbug-v0
+env_name: turn-to-goal-human-v0
 runner_type: multi-evo-agent-runner
 
 agent_specs:
   batch_design: true
 
-egnn: True
+egnn: False
+z_num: 5
+
+# training parameters
+gamma: 0.995
+tau: 0.95
+dev_policy_specs:
+  scale_htype: tanh
+  scale_mlp: [64, 64]
+  scale_log_std: 0
+  scale_fix_control_std: False
+  control_htype: tanh
+  control_mlp: [64, 128, 64]
+  control_log_std: 0
+  control_fix_control_std: False
 
 robot:
   param_mapping: sin
@@ -33,20 +47,6 @@ robot:
       lb: 20
       ub: 400
 
-# training parameters
-gamma: 0.995
-tau: 0.95
-
-dev_policy_specs:
-  scale_htype: tanh
-  scale_mlp: [64, 64]
-  scale_log_std: 0
-  scale_fix_control_std: False
-  control_htype: tanh
-  control_mlp: [64, 128, 64]
-  control_log_std: 0
-  control_fix_control_std: False
-
 policy_optimizer: 'Adam'
 policy_lr: 5.e-5
 policy_momentum: 0.0
@@ -66,16 +66,21 @@ clip_epsilon: 0.2
 min_batch_size: 50000
 mini_batch_size: 2048
 num_optim_epoch: 10
-max_epoch_num: 1000
+max_epoch_num: 2000
 seed: 42
 save_model_interval: 1
 
 use_entire_obs: False
 
-use_reward_scaling: False
-use_opponent_sample: True
-delta: 0.5
+# done_condition:
+#   max_ang: 60
 
-use_exploration_curriculum: True
+use_reward_scaling: False
+use_opponent_sample: False
+use_shadow_sample: False
+delta: 1.
+
+use_exploration_curriculum: False
 termination_epoch: 1000
-use_parse_reward: True
+use_parse_reward: False
+symmetric: True
