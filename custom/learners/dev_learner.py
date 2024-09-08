@@ -234,8 +234,6 @@ class DevLearner:
         
         t4 = time.time()
         print(f'{len(states)}: {t1-t0} {t2-t1} {t3-t2} {t4-t3}({tab})')
-        import ipdb
-        ipdb.set_trace()
         return np.mean(policy_losses), np.mean(value_losses)
 
 
@@ -278,5 +276,5 @@ class DevLearner:
         optimizer_policy.step()
         t3 = time.time()
         
-        print(f'{t3-t0} = {t1-t0} {t2-t1} {t3-t2}')
+        # print(f'{t3-t0} = {t1-t0} {t2-t1} {t3-t2}')
         return policy_surr, value_loss, entropy
