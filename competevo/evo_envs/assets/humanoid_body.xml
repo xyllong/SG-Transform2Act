@@ -6,6 +6,8 @@
     <motor ctrllimited="true" ctrlrange="-.4 .4"/>
 </default>
 <body name="torso" pos="0 0 1.4" euler="0 0 180">
+    <camera mode="trackcom" name="tilted" pos="3.6 4 -0.2" xyaxes="1 -.9 0 0 0 -1" />
+    <camera mode="trackcom" name="track" pos="0 4 0" xyaxes="1 0 0 0 0 -1" />
     <joint armature="0" damping="0" limited="false" name="root" pos="0 0 0" stiffness="0" type="free"/>
     <geom fromto="0 -.07 0 0 .07 0" name="torso1" size="0.07" type="capsule"/>
     <geom name="head" pos="0 0 .19" size=".09" type="sphere" user="258"/>

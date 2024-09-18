@@ -282,6 +282,8 @@ class MultiDevAgentEnv(MujocoEnv):
         self._elapsed_steps += 1
         for i in range(self.n_agents):
             self.agents[i].before_step()
+
+        # frame = self.env_scene.mujoco_renderer.render("rgb_array",  camera_name='agent0/tilted')    
         
         self.env_scene.simulate(actions)
         move_rews = []
@@ -304,6 +306,8 @@ class MultiDevAgentEnv(MujocoEnv):
             rews.append(float(goal_rews[i] + self.move_reward_weight * move_rews[i]))
         rews = tuple(rews)
         terminateds = self._get_done(dones, game_done)
+
+        # infos.append(frame)
         infos = tuple(infos)
         obses = self._get_obs()
         

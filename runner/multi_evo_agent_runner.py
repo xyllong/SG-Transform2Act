@@ -634,6 +634,15 @@ class MultiEvoAgentRunner(BaseRunner):
                 # # img.save('test.jpg')
                 # imgs.append(img)
 
+                # if len(infos) >1:
+                #     frame = infos[-1]
+                #     frame = np.flipud(frame)
+
+                #     # #保存图片
+                #     img = Image.fromarray(frame)
+                #     img.save('test.jpg')
+                #     imgs.append(img)
+
                 # normalize states
                 for i, learner in self.learners.items():
                     if learner.running_state is not None:
@@ -667,8 +676,8 @@ class MultiEvoAgentRunner(BaseRunner):
             
             total_reward.append(episode_reward)
 
-            # if _ == 0:
-            #     imgs[0].save('test.gif', save_all=True, append_images=imgs[1:], duration=30, loop=0)
+            if _ == 0:
+                imgs[0].save('test_devhuman.gif', save_all=True, append_images=imgs[1:], duration=30, loop=0)
 
         def average(list):
             total = sum(list)
