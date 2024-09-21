@@ -4,3 +4,5 @@ from .multi_dev_agent_env import MultiDevAgentEnv
 from .robo_sumo_dev import RoboSumoDevEnv
 from .robo_sumo_evo import RoboSumoEvoEnv
 from .robo_sumo_animal import RoboSumoAnimalEnv
+
+from .robo_sumo import RoboSumoEnv

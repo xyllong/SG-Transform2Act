@@ -13,3 +13,5 @@ from .dev_spider_fighter import DevSpiderFighter
 
 from .dev_humanoid import DevHumanoid
 from .humanoid import Humanoid
+
+from .ant_fighter import AntFighter

@@ -15,6 +15,14 @@ class MultiDevAgentEnv(MujocoEnv):
     a MultiAgentScene
     '''
     AGENT_MAP = {
+        'ant_fighter': (
+            os.path.join(os.path.dirname(__file__), "assets", "dev_ant_body.xml"),
+            AntFighter
+        ),
+        'sg_ant_fighter': (
+            os.path.join(os.path.dirname(__file__), "assets", "sg_dev_ant_body.xml"),
+            AntFighter
+        ),
         'dev_ant': (
             os.path.join(os.path.dirname(__file__), "assets", "dev_ant_body.xml"),
             # os.path.join(os.path.dirname(__file__), "assets", "evo_ant_body_base.xml"),
