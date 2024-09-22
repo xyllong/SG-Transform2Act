@@ -33,7 +33,7 @@ class DevHumanoid(Agent):
         self.cur_xml_str = etree.tostring(self.tree, pretty_print=True).decode('utf-8')
 
         self.cfg = cfg
-        
+
         self.robot = Robot(cfg.robot_cfg, xml=xml_path)
 
         self.stage = "attribute_transform"
@@ -44,7 +44,7 @@ class DevHumanoid(Agent):
     @property
     def flag(self):
         return "dev"
-        
+
     def set_env(self, env):
         self.env = env
         self._env_init = True

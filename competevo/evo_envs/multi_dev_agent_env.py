@@ -76,6 +76,22 @@ class MultiDevAgentEnv(MujocoEnv):
             os.path.join(os.path.dirname(__file__), "assets", "test_sg_dev_spider_body.xml"),
             DevSpiderFighter
         ),
+        'ant_turn': (
+            os.path.join(os.path.dirname(__file__), "assets", "dev_ant_body_turn.xml"),
+            AntTurn
+        ),
+        'sg_ant_turn': (
+            os.path.join(os.path.dirname(__file__), "assets", "sg_dev_ant_body_turn.xml"),
+            AntTurn
+        ),
+        'dev_ant_turn': (
+            os.path.join(os.path.dirname(__file__), "assets", "dev_ant_body_turn.xml"),
+            DevAntTurn
+        ),
+        'sg_dev_ant_turn': (
+            os.path.join(os.path.dirname(__file__), "assets", "sg_dev_ant_body_turn.xml"),
+            DevAntTurn
+        ),
         'dev_humanoid': (
             os.path.join(os.path.dirname(__file__), "assets", "dev_humanoid_body.xml"),
             # os.path.join(os.path.dirname(__file__), "assets", "evo_ant_body_base.xml"),
@@ -291,8 +307,8 @@ class MultiDevAgentEnv(MujocoEnv):
         for i in range(self.n_agents):
             self.agents[i].before_step()
 
-        # frame = self.env_scene.mujoco_renderer.render("rgb_array",  camera_name='agent0/tilted')    
-        
+        frame = self.env_scene.mujoco_renderer.render("rgb_array",  camera_name='agent0/tilted')    
+
         self.env_scene.simulate(actions)
         move_rews = []
         infos = []
@@ -315,7 +331,7 @@ class MultiDevAgentEnv(MujocoEnv):
         rews = tuple(rews)
         terminateds = self._get_done(dones, game_done)
 
-        # infos.append(frame)
+        infos.append(frame)
         infos = tuple(infos)
         obses = self._get_obs()
         

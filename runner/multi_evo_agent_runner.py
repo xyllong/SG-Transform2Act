@@ -626,22 +626,21 @@ class MultiEvoAgentRunner(BaseRunner):
                             actions.append(learner.policy_net.select_action(state_var[i], use_mean_action).squeeze().cpu().numpy().astype(np.float64))
                 next_states, env_rewards, terminateds, truncated, infos = self.env.step(actions)
                 
-                # 使用 MuJoCo 的渲染方法
-                frame = self.env.env_scene.mujoco_renderer.render(render_mode='rgb_array')
+                # # 使用 MuJoCo 的渲染方法
+                # frame = self.env.env_scene.mujoco_renderer.render(render_mode='rgb_array')
 
-                # #保存图片
-                img = Image.fromarray(frame)
-                img.save('test.jpg')
-                imgs.append(img)
+                # # 保存图片
+                # img = Image.fromarray(frame)
+                # img.save('test.jpg')
+                # imgs.append(img)
 
-                # if len(infos) >1:
-                #     frame = infos[-1]
-                #     frame = np.flipud(frame)
+                if len(infos) >1:
+                    frame = infos[-1]
 
-                #     # #保存图片
-                #     img = Image.fromarray(frame)
-                #     img.save('test.jpg')
-                #     imgs.append(img)
+                    # #保存图片
+                    img = Image.fromarray(frame)
+                    img.save('test.jpg')
+                    imgs.append(img)
 
                 # normalize states
                 for i, learner in self.learners.items():
@@ -678,7 +677,8 @@ class MultiEvoAgentRunner(BaseRunner):
 
             if _ == 0:
                 # imgs[0].save('test_devhuman.gif', save_all=True, append_images=imgs[1:], duration=30, loop=0)
-                imgs[0].save('test.gif', save_all=True, append_images=imgs[1:], duration=30, loop=0)
+                # imgs[0].save('test.gif', save_all=True, append_images=imgs[1:], duration=30, loop=0)
+                imgs[0].save('test_devant.gif', save_all=True, append_images=imgs[1:], duration=30, loop=0)
 
         def average(list):
             total = sum(list)
