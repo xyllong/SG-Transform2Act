@@ -5,7 +5,7 @@ agent_specs:
   batch_design: true
 
 egnn: False
-z_num: 7
+z_num: 5
 
 robot:
   param_mapping: sin
