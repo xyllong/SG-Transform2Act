@@ -62,7 +62,10 @@ class AntFighter(RoboAntFighter):
         self.state_dim = self.stage_state_dim + self.scale_state_dim + self.sim_obs_dim
 
         # print(self.state_dim, self.action_dim)
-            
+
+    def set_design_params(self, action):
+        pass
+
     def before_step(self):
         self.posbefore = self.get_qpos()[:2].copy()
     
@@ -158,15 +161,3 @@ class AntFighter(RoboAntFighter):
         high = np.inf * np.ones(self.obs_dim)
         low = -high
         self.observation_space = Box(low, high)
-
-    def reset_agent(self,**kwargs):
-        xpos = self.get_qpos()[0]
-        if xpos * self.GOAL > 0:
-            self.set_goal(-self.GOAL)
-        if xpos > 0:
-            self.move_left = True
-        else:
-            self.move_left = False
-        
-        self.stage = 'execution'
-        self.scale_vector = np.zeros(20)
